@@ -1,0 +1,7 @@
+.DS_Store
+*.o
+a.out
+*.dSYM/
+
+misc/
+minishell_test/
