@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/08 10:17:13 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/08 10:36:34 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ int		isandor(char *s)
 /* } */
 
 
-/* Tokenize */
+/* Tokenizer */
 
 typedef struct	s_tokenizer
 {
@@ -160,6 +160,93 @@ char	*tokenize(char *str, int *type, char **token)
 	*token = tokenizer.token;
 	return (str);
 }
+
+
+/* Command */
+
+typedef struct	s_command
+{
+	int					argc;
+	char				**argv;
+	pid_t				pid;
+
+	struct s_command	*next;
+	int					op; // Connecting op & ; | && ||
+}				t_command;
+
+t_command	*command_new(void)
+{
+	t_command	*c;
+
+	if (!(c = malloc(sizeof(t_command))))
+		return (NULL);
+	c->argc = 0;
+	c->argv = NULL;
+	c->pid = -1;
+	c->next = NULL;
+	c->op = -1;
+	return (c);
+}
+
+void		command_clear(t_command *c)
+{
+	int	i;
+
+	i = 0;
+	while (i < c->argc)
+		free(c->argv[i++]);
+	free(c);
+}
+
+void		command_append_arg(t_command *c, char *word)
+{
+	char	**new_argv;
+	int		i;
+
+	new_argv = malloc(sizeof(char *) * c->argc + 2);
+	i = 0;
+	while (i < c->argc)
+	{
+		new_argv[i] = c->argv[i];
+		i++;
+	}
+	free(c->argv);
+	c->argv = new_argv;
+	c->argv[c->argc] = word;
+	c->argv[c->argc + 1] = NULL;
+	++c->argc;
+}
+
+int			command_isbackground(t_command *c)
+{
+	while (c->op != TOKEN_SEPARATOR && c->op != TOKEN_BACKGROUND)
+		c = c->next;
+	return (c-> op == TOKEN_BACKGROUND);
+}
+
+int			command_isleftsidepipe(t_command *current)
+{
+	t_command *next;
+
+	if (!current->next)
+		return (0);
+	next = current->next;
+	if (next->op == TOKEN_PIPE)
+		return (1);
+	return (0);
+}
+
+int			command_isrightsidepipe(t_command *head, t_command *current)
+{
+	while (head->next)
+	{
+		if (head->op == TOKEN_PIPE && head->next == current)
+			return (1);
+		head = head->next;
+	}
+	return (0);
+}
+
 
 
 /* parse */
