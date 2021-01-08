@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/07 19:23:03 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/08 10:17:13 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,9 @@
 # define TOKEN_RPAREN 8
 # define TOKEN_OTHER -1
 
+
+/* Utilities */
+
 int		ft_isspace(int c)
 {
 	return (c == '\t' || c == '\n' || c == '\v' ||
@@ -50,6 +53,14 @@ int		isandor(char *s)
 {
 	return ((*s == '&' || *s == '|') && s[1] == *s);
 }
+
+/* void Log(char *fmt, ...) */
+/* { */
+/*  */
+/* } */
+
+
+/* Tokenize */
 
 typedef struct	s_tokenizer
 {
@@ -95,12 +106,12 @@ char	*tokenize(char *str, int *type, char **token)
 	{
 		*type = TOKEN_REDIRECTION;
 		append_to_token(*str, &tokenizer);
-		++str;
 		if (str[1] == '>')
 		{
 			append_to_token(str[1], &tokenizer);
 			++str;
 		}
+		++str;
 	}
 	else if (isandor(str))
 	{
@@ -109,7 +120,7 @@ char	*tokenize(char *str, int *type, char **token)
 		append_to_token(str[1], &tokenizer);
 		str += 2;
 	}
-	else if (isspecial(*str))
+	else if (isoperator(*str))
 	{
 		switch (*str) {
 		case ';': *type = TOKEN_SEPARATOR;   break;
@@ -137,7 +148,7 @@ char	*tokenize(char *str, int *type, char **token)
 			else if (*str == '\\' && str[1] != '\0' && quoted != '\'')
 			{
 				append_to_token(str[1], &tokenizer);
-				str++;
+				++str;
 			}
 			else
 				append_to_token(*str, &tokenizer);
@@ -149,6 +160,9 @@ char	*tokenize(char *str, int *type, char **token)
 	*token = tokenizer.token;
 	return (str);
 }
+
+
+/* parse */
 
 void	parse_line(char* s)
 {
