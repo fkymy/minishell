@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/08 11:44:50 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/08 19:07:10 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -251,6 +251,73 @@ int			command_isrightsidepipe(t_command *head, t_command *current)
 
 /* Execute */
 
+pid_t	start_command(t_command *c)
+{
+	pid_t command_pid;
+
+	command_pid = fork();
+	if (command_pid < 0)
+	{
+		perror("Failed to fork");
+		exit(1);
+	}
+	if (command_pid == 0)
+	{
+		if (!c->argv)
+		{
+			printf("[child %d] c->argv is NULL\n", getpid());
+			_exit(1);
+		}
+		if (c->op == -1)
+		{
+			printf("[child %d] c->op is -1\n", getpid());
+			_exit(1);
+		}
+		if (execvp(c->argv[0], c->argv) < 0)
+		{
+			perror("Failed to execvp");
+			_exit(1);
+		}
+		perror("This should not be printed if execvp is successful");
+		_exit(1);
+	}
+	else
+	{
+		c->pid = command_pid;
+	}
+
+	return (c->pid);
+}
+
+void	run_commandlist(t_command *c)
+{
+	// Assume connectors are all ';' operator
+	while (c)
+	{
+		if (!c->argv)
+		{
+			c = c->next;
+			continue ;
+		}
+
+		// Run command
+		pid_t command_pid = start_command(c);
+
+		// Wait for child
+		int stat_loc;
+		pid_t exited_pid = waitpid(command_pid, &stat_loc, 0); // blocking
+		assert(exited_pid == c->pid);
+		if (WIFEXITED(stat_loc))
+		{
+			printf("[run_list %d] child with pid %d exited with status %d\n", getpid(), exited_pid, WEXITSTATUS(stat_loc));
+		}
+		else
+		{
+			printf("[run_list %d] child exited abnormally with status: %d\n", getpid(), stat_loc);
+		}
+		c = c->next;
+	}
+}
 
 /* Parse */
 
@@ -260,7 +327,7 @@ int		isconnector(int t)
 			|| t == TOKEN_AND || t == TOKEN_OR);
 }
 
-void	parse_line(char	*s)
+void	parse_commandline(char	*s)
 {
 	int			type;
 	char		*token;
@@ -284,24 +351,11 @@ void	parse_line(char	*s)
 		}
 	}
 
-	// Test Command List
-	// "ls -la | echo | grep ; echo '     hello\n' & echo -n \"\\\"hello\" ; echo >> file1 < file2;"
-	t_command *current;
-	current = head;
-	while (current)
-	{
-		printf("RUN op: %d argc: %d argv: ", current->op, current->argc);
-		if (current->argv)
-		{
-			for (int i = 0; current->argv[i]; i++)
-				printf("%s ", current->argv[i]);
-		}
-		else
-			printf("NULL");
-		printf("\n");
-		current = current->next;
-	}
+	// Execute
+	if (head->argc)
+		run_commandlist(head);
 
+	// Clear
 	t_command *tmp;
 	while (head)
 	{
@@ -323,7 +377,6 @@ int		main(int argc, char *argv[])
 	}
 
 	printf("Testing parse for string \"%s\"\n", argv[1]);
-	parse_line(argv[1]);
-
+	parse_commandline(argv[1]);
 	exit(0);
 }
