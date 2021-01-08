@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/08 10:36:34 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/08 11:44:50 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,14 @@
 
 /* Utilities */
 
+/* void Log(char *fmt, ...) */
+/* { */
+/*  */
+/* } */
+
+
+/* Tokenizer */
+
 int		ft_isspace(int c)
 {
 	return (c == '\t' || c == '\n' || c == '\v' ||
@@ -53,14 +61,6 @@ int		isandor(char *s)
 {
 	return ((*s == '&' || *s == '|') && s[1] == *s);
 }
-
-/* void Log(char *fmt, ...) */
-/* { */
-/*  */
-/* } */
-
-
-/* Tokenizer */
 
 typedef struct	s_tokenizer
 {
@@ -203,14 +203,15 @@ void		command_append_arg(t_command *c, char *word)
 	char	**new_argv;
 	int		i;
 
-	new_argv = malloc(sizeof(char *) * c->argc + 2);
+	new_argv = malloc(sizeof(char *) * (c->argc + 2));
 	i = 0;
 	while (i < c->argc)
 	{
 		new_argv[i] = c->argv[i];
 		i++;
 	}
-	free(c->argv);
+	if (c->argv)
+		free(c->argv);
 	c->argv = new_argv;
 	c->argv[c->argc] = word;
 	c->argv[c->argc + 1] = NULL;
@@ -248,25 +249,79 @@ int			command_isrightsidepipe(t_command *head, t_command *current)
 }
 
 
+/* Execute */
 
-/* parse */
 
-void	parse_line(char* s)
+/* Parse */
+
+int		isconnector(int t)
 {
-	int		type;
-	char	*token;
+	return (t == TOKEN_SEPARATOR || t == TOKEN_BACKGROUND || t == TOKEN_PIPE
+			|| t == TOKEN_AND || t == TOKEN_OR);
+}
 
-	// Test Tokenizer
+void	parse_line(char	*s)
+{
+	int			type;
+	char		*token;
+	t_command	*head;
+	t_command	*c;
+
+	c = command_new();
+	head = c;
 	while ((s = tokenize(s, &type, &token)) != NULL) {
-		printf("[%d] %s\n", type, token);
-		free(token);
+		if (isconnector(type))
+		{
+			c->op = type;
+			t_command *new = command_new();
+			c->next = new;
+			c = new;
+		}
+		else
+		{
+			command_append_arg(c, token);
+			c->op = type;
+		}
+	}
+
+	// Test Command List
+	// "ls -la | echo | grep ; echo '     hello\n' & echo -n \"\\\"hello\" ; echo >> file1 < file2;"
+	t_command *current;
+	current = head;
+	while (current)
+	{
+		printf("RUN op: %d argc: %d argv: ", current->op, current->argc);
+		if (current->argv)
+		{
+			for (int i = 0; current->argv[i]; i++)
+				printf("%s ", current->argv[i]);
+		}
+		else
+			printf("NULL");
+		printf("\n");
+		current = current->next;
+	}
+
+	t_command *tmp;
+	while (head)
+	{
+		tmp = head->next;
+		command_clear(head);
+		head = tmp;
 	}
 }
 
+
+/* Main */
+
 int		main(int argc, char *argv[])
 {
-	(void)argc;
-	// Usage: ./minishell 'some commandline here'
+	if (argc != 2)
+	{
+		printf("Usage: ./minishell 'commandline here'\n");
+		exit(1);
+	}
+
 	printf("Testing parse for string \"%s\"\n", argv[1]);
 	parse_line(argv[1]);
 
