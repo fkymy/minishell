@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/08 19:07:10 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/09 18:50:52 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@
 /* } */
 
 
-/* Tokenizer */
+/* v */
 
 int		ft_isspace(int c)
 {
@@ -62,36 +62,44 @@ int		isandor(char *s)
 	return ((*s == '&' || *s == '|') && s[1] == *s);
 }
 
-typedef struct	s_tokenizer
+/* Growable dynamic array for token string */
+typedef struct	s_vector
 {
-	char	*token;
-	int		len;
-	int		cap;
-}				t_tokenizer;
+	char	*data;
+	size_t	size;
+	size_t	capacity;
+}				t_vector;
 
-
-void	append_to_token(int c, t_tokenizer *t)
+void	vector_initialize(t_vector *v)
 {
-	int		new_cap;
-	char	*new_token;
+	v->data = NULL;
+	v->size = 0;
+	v->capacity = 0;
+}
 
-	if (t->len == t->cap)
+void	vector_append(t_vector *v, int c)
+{
+	int		new_capacity;
+	char	*new_data;
+
+	if (v->size == v->capacity)
 	{
-		new_cap = t->cap ? t->cap * 2 : 8;
-		new_token = malloc(new_cap);
-		ft_memcpy(new_token, t->token, t->len);
-		free(t->token);
-		t->token = new_token;
-		t->cap += new_cap;
+		new_capacity = v->capacity ? v->capacity * 2 : 8;
+		new_data = malloc(new_capacity);
+		ft_memcpy(new_data, v->data, v->size);
+		free(v->data);
+		v->data = new_data;
+		v->capacity += new_capacity;
 	}
-	t->token[t->len++] = c;
+	v->data[v->size] = c;
+	++v->size;
 }
 
 char	*tokenize(char *str, int *type, char **token)
 {
-	t_tokenizer tokenizer;
+	t_vector v;
 
-	ft_memset(&tokenizer, 0, sizeof(tokenizer));
+	vector_initialize(&v);
 
 	while (str && ft_isspace(*str))
 		++str;
@@ -105,10 +113,10 @@ char	*tokenize(char *str, int *type, char **token)
 	if (isredirect(*str))
 	{
 		*type = TOKEN_REDIRECTION;
-		append_to_token(*str, &tokenizer);
+		vector_append(&v, *str);
 		if (str[1] == '>')
 		{
-			append_to_token(str[1], &tokenizer);
+			vector_append(&v, str[1]);
 			++str;
 		}
 		++str;
@@ -116,8 +124,8 @@ char	*tokenize(char *str, int *type, char **token)
 	else if (isandor(str))
 	{
 		*type = *str == '&' ? TOKEN_AND : TOKEN_OR;
-		append_to_token(*str, &tokenizer);
-		append_to_token(str[1], &tokenizer);
+		vector_append(&v, *str);
+		vector_append(&v, str[1]);
 		str += 2;
 	}
 	else if (isoperator(*str))
@@ -130,7 +138,7 @@ char	*tokenize(char *str, int *type, char **token)
 		case ')': *type = TOKEN_RPAREN;     break;
 		default:  *type = TOKEN_OTHER;      break;
 		}
-		append_to_token(*str, &tokenizer);
+		vector_append(&v, *str);
 		++str;
 	}
 	else
@@ -147,17 +155,17 @@ char	*tokenize(char *str, int *type, char **token)
 				quoted = 0;
 			else if (*str == '\\' && str[1] != '\0' && quoted != '\'')
 			{
-				append_to_token(str[1], &tokenizer);
+				vector_append(&v, str[1]);
 				++str;
 			}
 			else
-				append_to_token(*str, &tokenizer);
+				vector_append(&v, *str);
 			++str;
 		}
 	}
 
-	append_to_token('\0', &tokenizer);
-	*token = tokenizer.token;
+	vector_append(&v, '\0');
+	*token = v.data;
 	return (str);
 }
 
