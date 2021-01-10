@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/10 10:11:32 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/10 10:32:27 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,27 +244,40 @@ void		command_append_arg(t_command *c, char *word)
 
 /* Execute */
 
+int haspipe = 0;
+int lastpipe[2] = { -1, -1 };
+int currpipe[2];
+
 pid_t	start_command(t_command *c)
 {
-	pid_t command_pid;
+	pid_t pid;
 
-	command_pid = fork();
-	if (command_pid < 0)
+	if (ispipe(c->op))
+	{
+		int r = pipe(currpipe);
+		assert(r == 0);
+	}
+
+	pid = fork();
+	if (pid < 0)
 	{
 		perror("Failed to fork");
 		exit(1);
 	}
-	if (command_pid == 0)
+	else if (pid == 0)
 	{
-		if (!c->argv)
+		// Handle pipe
+		if (haspipe)
 		{
-			printf("[child %d] c->argv is NULL\n", getpid());
-			_exit(1);
+			close(lastpipe[1]);
+			dup2(lastpipe[0], 0);
+			close(lastpipe[0]);
 		}
-		if (c->op == -1)
+		if (ispipe(c->op))
 		{
-			printf("[child %d] c->op is -1\n", getpid());
-			_exit(1);
+			close(currpipe[0]);
+			dup2(currpipe[1], 1);
+			close(currpipe[1]);
 		}
 		if (execvp(c->argv[0], c->argv) < 0)
 		{
@@ -274,11 +287,22 @@ pid_t	start_command(t_command *c)
 		perror("This should not be printed if execvp is successful");
 		_exit(1);
 	}
-	else
+
+	// Cleanup
+	if (haspipe)
 	{
-		c->pid = command_pid;
+		close(lastpipe[0]);
+		close(lastpipe[1]);
 	}
 
+	// Setup for next command
+	haspipe = ispipe(c->op);
+	if (ispipe(c->op))
+	{
+		lastpipe[0] = currpipe[0];
+		lastpipe[1] = currpipe[1];
+	}
+	c->pid = pid;
 	return (c->pid);
 }
 
@@ -293,28 +317,34 @@ pid_t	start_command(t_command *c)
 //     - Handle pipe
 //   - Wait for exit and status
 
-void	run_commandlist(t_command *c)
+void	run_list(t_command *c)
 {
+	int stat_loc;
+	pid_t exited_pid;
+
 	while (c)
 	{
 		// Validations
-		if (!c->argv)
+		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
 		{
-			c = c->next;
-			continue ;
-		}
-		if (c->argv[c->argc] != NULL)
-		{
+			printf("Error: invalid command in list.\n");
 			c = c->next;
 			continue ;
 		}
 
-		// Run command
-		pid_t command_pid = start_command(c);
+		// Run pipeline in parallel
+		pid_t pid;
+		while (c)
+		{
+			pid = start_command(c);
+			if (haspipe)
+				c = c->next;
+			else
+				break ;
+		}
 
-		// Wait for child
-		int stat_loc;
-		pid_t exited_pid = waitpid(command_pid, &stat_loc, 0); // blocking
+		// Wait for child (blocking)
+		exited_pid = waitpid(pid, &stat_loc, 0);
 		assert(exited_pid == c->pid);
 		if (WIFEXITED(stat_loc))
 		{
@@ -368,7 +398,7 @@ void	parse_commandline(char	*str)
 
 	// Execute
 	if (head->argc)
-		run_commandlist(head);
+		run_list(head);
 
 	// Clear
 	t_command *tmp;
@@ -391,7 +421,7 @@ int		main(int argc, char *argv[])
 		exit(1);
 	}
 
-	printf("Testing parse for string \"%s\"\n", argv[1]);
+	printf("Testing with sstring \"%s\"\n", argv[1]);
 	parse_commandline(argv[1]);
 	exit(0);
 }
@@ -399,11 +429,6 @@ int		main(int argc, char *argv[])
 
 
 /* Archive */
-
-void		simple_pipe(char *cmd1, char *argv1, char *cmd2, char *argv2)
-{
-
-}
 
 int			command_isbackground(t_command *c)
 {
