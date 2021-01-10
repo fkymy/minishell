@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/10 10:32:27 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/10 10:50:10 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -399,6 +399,9 @@ void	parse_commandline(char	*str)
 	// Execute
 	if (head->argc)
 		run_list(head);
+
+	// Reap zombie processes
+	while(waitpid(-1,NULL,WNOHANG) > 0);
 
 	// Clear
 	t_command *tmp;
