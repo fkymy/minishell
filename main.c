@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/10 10:50:10 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/10 17:42:43 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include <sys/wait.h>
 #include <assert.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <errno.h>
 
 # define TOKEN_WORD 0
 # define TOKEN_REDIRECTION 1
@@ -193,6 +195,7 @@ typedef struct	s_command
 	int					op;		// Connecting operators are & ; | && ||
 
 	pid_t				pid;
+	int					redirection;
 
 }				t_command;
 
@@ -279,6 +282,41 @@ pid_t	start_command(t_command *c)
 			dup2(currpipe[1], 1);
 			close(currpipe[1]);
 		}
+
+		// Handle redirections
+		int fd;
+		for (int i = 0; i < c->argc; i++)
+		{
+			if (ft_strncmp(c->argv[i], "<", 1) == 0) // this would catch <abc
+			{
+				fd = open(c->argv[i+1], O_RDONLY);
+				if (fd == -1)
+				{
+					perror("Failed to open redirection file");
+					_exit(errno);
+				}
+				dup2(fd, 0);
+				close(fd);
+				c->argv[i] = NULL;
+			}
+			else if (ft_strncmp(c->argv[i], ">", 1) == 0)
+			{
+				fd = open(c->argv[i+1], O_WRONLY|O_CREAT, 0666);
+				if (fd == -1)
+				{
+					perror("Failed to open redirection file");
+					_exit(errno);
+				}
+				dup2(fd, 1);
+				close(fd);
+				c->argv[i] = NULL;
+			}
+			else if (ft_strncmp(c->argv[i], ">>", 2) == 0)
+			{
+				printf("Not implemented yet\n");
+			}
+		}
+
 		if (execvp(c->argv[0], c->argv) < 0)
 		{
 			perror("Failed to execvp");
@@ -358,6 +396,7 @@ void	run_list(t_command *c)
 	}
 }
 
+
 /* Parse */
 
 void	parse_commandline(char	*str)
@@ -424,7 +463,7 @@ int		main(int argc, char *argv[])
 		exit(1);
 	}
 
-	printf("Testing with sstring \"%s\"\n", argv[1]);
+	printf("Testing with string \"%s\"\n", argv[1]);
 	parse_commandline(argv[1]);
 	exit(0);
 }
