@@ -6,11 +6,10 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/11 19:34:35 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/11 21:29:54 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft/libft.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -19,6 +18,10 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
+
+#include "libft/libft.h"
+#include "command.h"
+#include "vector_string.h"
 
 # define TOKEN_WORD 0
 # define TOKEN_REDIRECTION 1
@@ -88,42 +91,9 @@ int		token_to_op(int t)
 	return (0);
 }
 
-// Growable dynamic array for token string
-typedef struct	s_vector
-{
-	char	*data;
-	size_t	size;
-	size_t	capacity;
-}				t_vector;
-
-void	vector_initialize(t_vector *v)
-{
-	v->data = NULL;
-	v->size = 0;
-	v->capacity = 0;
-}
-
-void	vector_append(t_vector *v, int c)
-{
-	size_t	new_capacity;
-	char	*new_data;
-
-	if (v->size == v->capacity)
-	{
-		new_capacity = v->capacity ? v->capacity * 2 : 8;
-		new_data = malloc(new_capacity);
-		ft_memcpy(new_data, v->data, v->size);
-		free(v->data);
-		v->data = new_data;
-		v->capacity += new_capacity;
-	}
-	v->data[v->size] = c;
-	++v->size;
-}
-
 char	*get_next_token(char *str, int *type, char **token)
 {
-	t_vector v;
+	t_vector_string v;
 
 	vector_initialize(&v);
 
@@ -194,64 +164,11 @@ char	*get_next_token(char *str, int *type, char **token)
 }
 
 
-/* Command */
-
-typedef struct	s_command
-{
-	struct s_command	*next;
-	int					argc;
-	char				**argv;
-	int					op; // Connecting operators that are & ; | && ||
-	pid_t				pid;
-}				t_command;
-
-t_command	*command_new(void)
-{
-	t_command	*c;
-
-	if (!(c = malloc(sizeof(t_command))))
-		return (NULL);
-	c->next = NULL;
-	c->argc = 0;
-	c->argv = NULL;
-	c->op = 0;
-
-	c->pid = -1;
-	return (c);
-}
-
-void		command_clear(t_command *c)
-{
-	int	i;
-
-	i = 0;
-	while (i < c->argc)
-		free(c->argv[i++]);
-	free(c);
-}
-
-void		command_append_arg(t_command *c, char *word)
-{
-	char	**new_argv;
-	int		i;
-
-	new_argv = malloc(sizeof(char *) * (c->argc + 2));
-	i = 0;
-	while (i < c->argc)
-	{
-		new_argv[i] = c->argv[i];
-		i++;
-	}
-	if (c->argv)
-		free(c->argv);
-	c->argv = new_argv;
-	c->argv[c->argc] = word;
-	c->argv[c->argc + 1] = NULL;
-	++c->argc;
-}
-
-
 /* Execute */
+
+// A list is composed of pipelines joined by ; or &
+// A pipeline is composed of commands joined by |
+// A command is composed of words and redirections
 
 int haspipe = 0;
 int lastpipe[2] = { -1, -1 };
@@ -350,10 +267,6 @@ pid_t	start_command(t_command *c)
 	return (c->pid);
 }
 
-// A list is composed of pipelines joined by ; or &
-// A pipeline is composed of commands joined by |
-// A command is composed of words and redirections
-
 // From command list:
 //   - Run pipelines (joined by ;)
 //     - Run commands in parallel (joined by |)
@@ -368,6 +281,14 @@ void	run_list(t_command *c)
 
 	while (c)
 	{
+		/* c = run_pipeline(c); */
+		/* exited_pid = waitpid(pid, &stat_loc, 0); */
+		/* if (WIFEXITED(stat_loc)) */
+		/* 	printf("%d\n", WEXITSTATUS(stat_loc)); */
+		/* else */
+		/* 	printf("child exited abnormally\n"); */
+		/* c = c->next; */
+
 		// Validations
 		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
 		{
@@ -392,11 +313,13 @@ void	run_list(t_command *c)
 		assert(exited_pid == c->pid);
 		if (WIFEXITED(stat_loc))
 		{
-			printf("[run_list %d] child with pid %d exited with status %d\n", getpid(), exited_pid, WEXITSTATUS(stat_loc));
+			printf("[run_list %d] child with pid %d exited with status %d\n",
+					getpid(), exited_pid, WEXITSTATUS(stat_loc));
 		}
 		else
 		{
-			printf("[run_list %d] child exited abnormally with status: %d\n", getpid(), stat_loc);
+			printf("[run_list %d] child exited abnormally with status: %d\n",
+					getpid(), stat_loc);
 		}
 		c = c->next;
 	}
@@ -456,7 +379,6 @@ int		main(int argc, char *argv[])
 	}
 
 	// Parse
-	/* printf("Testing with string \"%s\"\n", argv[1]); */
 	t_command *c;
 	c = parse_commandline(argv[1]);
 
@@ -478,39 +400,5 @@ int		main(int argc, char *argv[])
 	}
 
 	exit(0);
-}
-
-
-
-/* Archive */
-
-int			command_isbackground(t_command *c)
-{
-	while (c->op != TOKEN_SEPARATOR && c->op != TOKEN_BACKGROUND)
-		c = c->next;
-	return (c-> op == TOKEN_BACKGROUND);
-}
-
-int			command_isleftsidepipe(t_command *current)
-{
-	t_command *next;
-
-	if (!current->next)
-		return (0);
-	next = current->next;
-	if (next->op == TOKEN_PIPE)
-		return (1);
-	return (0);
-}
-
-int			command_isrightsidepipe(t_command *head, t_command *current)
-{
-	while (head->next)
-	{
-		if (head->op == TOKEN_PIPE && head->next == current)
-			return (1);
-		head = head->next;
-	}
-	return (0);
 }
 
