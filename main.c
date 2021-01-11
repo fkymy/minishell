@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/11 21:29:54 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/11 21:56:40 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,9 @@
 #include <errno.h>
 
 #include "libft/libft.h"
-#include "command.h"
 #include "vector_string.h"
+#include "token.h"
+#include "command.h"
 
 # define TOKEN_WORD 0
 # define TOKEN_REDIRECTION 1
@@ -46,137 +47,16 @@
 /* } */
 
 
-
-/* Utilities */
-
-int		ft_isspace(int c)
-{
-	return (c == '\t' || c == '\n' || c == '\v' ||
-			c == '\f' || c == '\r' || c == ' ');
-}
-
-int		ft_isspecial(int c)
-{
-	return (c == '<' || c == '>' || c == '&' || c == '|' ||
-			c == ';' || c == '(' || c == ')' || c == '#');
-}
-
-int		isredirect(int c)
-{
-	return (c == '<' || c == '>');
-}
-
-int		isandor(char *s)
-{
-	return ((*s == '&' || *s == '|') && s[1] == *s);
-}
-
-int		token_isop(int t)
-{
-	return (t == TOKEN_SEPARATOR || t == TOKEN_PIPE
-			|| t == TOKEN_AND || t == TOKEN_OR);
-}
-
-int		token_ispipe(int t)
-{
-	return (t == TOKEN_PIPE);
-}
-
-int		token_to_op(int t)
-{
-	if (t == TOKEN_SEPARATOR)
-		return (OP_SEPARATOR);
-	if (t == TOKEN_PIPE)
-		return (OP_PIPE);
-	return (0);
-}
-
-char	*get_next_token(char *str, int *type, char **token)
-{
-	t_vector_string v;
-
-	vector_initialize(&v);
-
-	while (str && ft_isspace(*str))
-		++str;
-	if (!str || *str == '\0' || *str == '#')
-	{
-		*type = TOKEN_SEPARATOR;
-		*token = NULL;
-		return (NULL);
-	}
-
-	if (isredirect(*str))
-	{
-		*type = TOKEN_REDIRECTION;
-		vector_append(&v, *str);
-		if (str[1] == '>')
-		{
-			vector_append(&v, str[1]);
-			++str;
-		}
-		++str;
-	}
-	else if (isandor(str))
-	{
-		*type = *str == '&' ? TOKEN_AND : TOKEN_OR;
-		vector_append(&v, *str);
-		vector_append(&v, str[1]);
-		str += 2;
-	}
-	else if (ft_isspecial(*str))
-	{
-		if (*str == ';' || *str == '&')
-			*type = TOKEN_SEPARATOR; // Do not support background conditionals
-		else if (*str == '|')
-			*type = TOKEN_PIPE;
-		else
-			*type = TOKEN_OTHER;
-		vector_append(&v, *str);
-		++str;
-	}
-	else
-	{
-		*type = TOKEN_WORD;
-		int quoted = 0;
-		while ((*str && quoted)
-				|| (*str && !ft_isspace(*str)
-					&& !ft_isspecial(*str)))
-		{
-			if ((*str == '\"' || *str == '\'') && !quoted)
-				quoted = *str;
-			else if (*str == quoted)
-				quoted = 0;
-			else if (*str == '\\' && str[1] != '\0' && quoted != '\'')
-			{
-				vector_append(&v, str[1]);
-				++str;
-			}
-			else
-				vector_append(&v, *str);
-			++str;
-		}
-	}
-
-	vector_append(&v, '\0');
-	*token = v.data;
-	return (str);
-}
-
-
 /* Execute */
 
 // A list is composed of pipelines joined by ; or &
 // A pipeline is composed of commands joined by |
 // A command is composed of words and redirections
 
-int haspipe = 0;
-int lastpipe[2] = { -1, -1 };
-int currpipe[2];
-
-pid_t	start_command(t_command *c)
+pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2])
 {
-	pid_t pid;
+	pid_t	pid;
+	int		currpipe[2];
 
 	if (token_ispipe(c->op))
 	{
@@ -193,7 +73,7 @@ pid_t	start_command(t_command *c)
 	else if (pid == 0)
 	{
 		// Handle pipe
-		if (haspipe)
+		if (*haspipe)
 		{
 			close(lastpipe[1]);
 			dup2(lastpipe[0], 0);
@@ -250,14 +130,14 @@ pid_t	start_command(t_command *c)
 	}
 
 	// Cleanup
-	if (haspipe)
+	if (*haspipe)
 	{
 		close(lastpipe[0]);
 		close(lastpipe[1]);
 	}
 
 	// Setup for next command
-	haspipe = token_ispipe(c->op);
+	*haspipe = token_ispipe(c->op);
 	if (token_ispipe(c->op))
 	{
 		lastpipe[0] = currpipe[0];
@@ -276,20 +156,12 @@ pid_t	start_command(t_command *c)
 
 void	run_list(t_command *c)
 {
-	int stat_loc;
-	pid_t exited_pid;
+	int		stat_loc;
+	pid_t	exited_pid;
 
 	while (c)
 	{
-		/* c = run_pipeline(c); */
-		/* exited_pid = waitpid(pid, &stat_loc, 0); */
-		/* if (WIFEXITED(stat_loc)) */
-		/* 	printf("%d\n", WEXITSTATUS(stat_loc)); */
-		/* else */
-		/* 	printf("child exited abnormally\n"); */
-		/* c = c->next; */
-
-		// Validations
+		// Validations ?
 		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
 		{
 			printf("Error: invalid command in list.\n");
@@ -298,10 +170,13 @@ void	run_list(t_command *c)
 		}
 
 		// Run pipeline in parallel
-		pid_t pid;
+		pid_t command_pid;
+		int haspipe = 0;
+		int lastpipe[2] = { -1, -1 };
+
 		while (c)
 		{
-			pid = start_command(c);
+			command_pid = start_command(c, &haspipe, lastpipe);
 			if (haspipe)
 				c = c->next;
 			else
@@ -309,7 +184,7 @@ void	run_list(t_command *c)
 		}
 
 		// Wait for child (blocking)
-		exited_pid = waitpid(pid, &stat_loc, 0);
+		exited_pid = waitpid(command_pid, &stat_loc, 0);
 		assert(exited_pid == c->pid);
 		if (WIFEXITED(stat_loc))
 		{

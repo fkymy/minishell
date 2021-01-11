@@ -8,6 +8,8 @@ LIBFT := $(LIBFT_DIR)/libft.a
 
 INCLUDES := .
 SRCS := main.c \
+		vector_string.c \
+		token.c
 		command.c \
 
 OBJS := $(SRCS:.c=.o)
