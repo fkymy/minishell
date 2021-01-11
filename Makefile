@@ -6,7 +6,7 @@ CFLAGS := -g -Wall -Wextra -Werror
 LIBFT_DIR := libft
 LIBFT := $(LIBFT_DIR)/libft.a
 
-INCLUDES := .
+INCLUDES := ./includes
 SRCS := main.c \
 
 OBJS := $(SRCS:.c=.o)
