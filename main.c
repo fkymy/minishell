@@ -6,11 +6,12 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/12 03:21:23 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/12 05:41:01 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
+#include <stdio.h>
 
 int		is_cmd_builtins(char *cmd, char **builtins)
 {
@@ -27,6 +28,26 @@ int		is_cmd_builtins(char *cmd, char **builtins)
 	return (42);
 }
 
+char	**set_path_name(char *envp[])
+{
+	int		i;
+	char	*tmp;
+	char	**path;
+
+	i = 0;
+	while (envp[i] && ft_strncmp(envp[i], "PATH", 4))
+		i++;
+	path = NULL;
+	if (envp[i])
+	{
+		if (!(tmp = ft_substr(envp[i], 5, ft_strlen(envp[i]))))
+			return (NULL);
+		if (!(path = ft_split(tmp, ':')))
+			return (NULL);
+	}
+	return (path);
+}
+
 char	**set_builtins_name()
 {
 	char	**builtins;
@@ -40,6 +61,32 @@ char	**set_builtins_name()
 	return (builtins);
 }
 
+char
+	*is_cmd_exist(char **paths, char *cmd)
+{
+	int		i;
+	t_stat	stat_buf;
+	char	*tmp;
+	char	*path2cmd;
+
+	i = 0;
+	while (42)
+	{
+		if (!(tmp = ft_strjoin(paths[i], "/")))
+			break ;
+		if (!(path2cmd = ft_strjoin(tmp, cmd)))
+			break ;
+		ft_free_null(&tmp);
+		if (!stat(path2cmd, &stat_buf))
+			return (path2cmd);
+		ft_free_null(&path2cmd);
+		i++;
+	}
+	ft_free_null(&tmp);
+	ft_free_null(&path2cmd);
+	return (NULL);
+}
+
 int	main(int argc, char *argv[], char *envp[])
 {
 	char		**cmds;
@@ -49,6 +96,7 @@ int	main(int argc, char *argv[], char *envp[])
 	int			stat_loc;
 	int			ret;
 	char		**builtins;
+	char		**path;
 
 	(void)argc;
 	(void)argv;
@@ -56,6 +104,12 @@ int	main(int argc, char *argv[], char *envp[])
 	if (argc != 1)
 		return (42);
 	builtins = set_builtins_name();
+	if (!(path = set_path_name(envp)))
+	{
+		ft_putstr_fd(strerror(errno), 2);
+		ft_putstr_fd("\n", 2);
+		exit(1);
+	}
 	while (42)
 	{
 		ft_putstr_fd("minishell>", 1);
@@ -84,12 +138,9 @@ int	main(int argc, char *argv[], char *envp[])
 		child_pid = fork();
 		if (child_pid < 0)
 			exit(1);
-		if (child_pid == 0)
+		cmd = is_cmd_exist(path, cmds[0]);
+		if (child_pid == 0 && cmd)
 		{
-			if (!(cmd = ft_calloc(1, sizeof(char) * (ft_strlen(cmds[0]) + 6))))
-				break ;
-			ft_strlcpy(cmd, "/bin/", ft_strlen(cmds[0]) + 6);
-			ft_strlcat(cmd, cmds[0], ft_strlen(cmds[0]) + 6);
 			if ((ret = execve(cmd, cmds, envp)) == -1)
 			{
 				ft_putstr_fd(strerror(errno), 2);
