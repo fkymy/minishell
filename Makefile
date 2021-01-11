@@ -8,6 +8,7 @@ LIBFT := $(LIBFT_DIR)/libft.a
 
 INCLUDES := .
 SRCS := main.c \
+		command.c \
 
 OBJS := $(SRCS:.c=.o)
 
@@ -34,3 +35,6 @@ clean:
 	make clean -C $(LIBFT_DIR)
 
 .PHONY: all re fclean clean bonus
+
+debug:
+
