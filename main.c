@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/10 17:42:43 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/11 19:34:35 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,15 @@
 # define TOKEN_PIPE 4
 # define TOKEN_AND 5
 # define TOKEN_OR 6
-# define TOKEN_LPAREN 7
-# define TOKEN_RPAREN 8
 # define TOKEN_OTHER -1
 
+
+// is it easier if i separate tokens and command ops?
+# define OP_SEPARATOR 1
+# define OP_PIPE 2
+
+
+/* Logger */
 
 /* void Log(char *fmt, ...) */
 /* { */
@@ -47,7 +52,7 @@ int		ft_isspace(int c)
 			c == '\f' || c == '\r' || c == ' ');
 }
 
-int		isoperator(int c)
+int		ft_isspecial(int c)
 {
 	return (c == '<' || c == '>' || c == '&' || c == '|' ||
 			c == ';' || c == '(' || c == ')' || c == '#');
@@ -63,19 +68,25 @@ int		isandor(char *s)
 	return ((*s == '&' || *s == '|') && s[1] == *s);
 }
 
-
-int		isconnector(int t)
+int		token_isop(int t)
 {
-	return (t == TOKEN_SEPARATOR || t == TOKEN_BACKGROUND || t == TOKEN_PIPE
+	return (t == TOKEN_SEPARATOR || t == TOKEN_PIPE
 			|| t == TOKEN_AND || t == TOKEN_OR);
 }
 
-int		ispipe(int t)
+int		token_ispipe(int t)
 {
 	return (t == TOKEN_PIPE);
 }
 
-/* Tokenize */
+int		token_to_op(int t)
+{
+	if (t == TOKEN_SEPARATOR)
+		return (OP_SEPARATOR);
+	if (t == TOKEN_PIPE)
+		return (OP_PIPE);
+	return (0);
+}
 
 // Growable dynamic array for token string
 typedef struct	s_vector
@@ -143,16 +154,14 @@ char	*get_next_token(char *str, int *type, char **token)
 		vector_append(&v, str[1]);
 		str += 2;
 	}
-	else if (isoperator(*str))
+	else if (ft_isspecial(*str))
 	{
-		switch (*str) {
-		case ';': *type = TOKEN_SEPARATOR;  break;
-		case '&': *type = TOKEN_SEPARATOR;  break; // do not support background conditionals
-		case '|': *type = TOKEN_PIPE;       break;
-		case '(': *type = TOKEN_LPAREN;     break;
-		case ')': *type = TOKEN_RPAREN;     break;
-		default:  *type = TOKEN_OTHER;      break;
-		}
+		if (*str == ';' || *str == '&')
+			*type = TOKEN_SEPARATOR; // Do not support background conditionals
+		else if (*str == '|')
+			*type = TOKEN_PIPE;
+		else
+			*type = TOKEN_OTHER;
 		vector_append(&v, *str);
 		++str;
 	}
@@ -162,7 +171,7 @@ char	*get_next_token(char *str, int *type, char **token)
 		int quoted = 0;
 		while ((*str && quoted)
 				|| (*str && !ft_isspace(*str)
-					&& !isoperator(*str)))
+					&& !ft_isspecial(*str)))
 		{
 			if ((*str == '\"' || *str == '\'') && !quoted)
 				quoted = *str;
@@ -192,11 +201,8 @@ typedef struct	s_command
 	struct s_command	*next;
 	int					argc;
 	char				**argv;
-	int					op;		// Connecting operators are & ; | && ||
-
+	int					op; // Connecting operators that are & ; | && ||
 	pid_t				pid;
-	int					redirection;
-
 }				t_command;
 
 t_command	*command_new(void)
@@ -208,7 +214,7 @@ t_command	*command_new(void)
 	c->next = NULL;
 	c->argc = 0;
 	c->argv = NULL;
-	c->op = -1;
+	c->op = 0;
 
 	c->pid = -1;
 	return (c);
@@ -255,7 +261,7 @@ pid_t	start_command(t_command *c)
 {
 	pid_t pid;
 
-	if (ispipe(c->op))
+	if (token_ispipe(c->op))
 	{
 		int r = pipe(currpipe);
 		assert(r == 0);
@@ -276,7 +282,7 @@ pid_t	start_command(t_command *c)
 			dup2(lastpipe[0], 0);
 			close(lastpipe[0]);
 		}
-		if (ispipe(c->op))
+		if (token_ispipe(c->op))
 		{
 			close(currpipe[0]);
 			dup2(currpipe[1], 1);
@@ -334,8 +340,8 @@ pid_t	start_command(t_command *c)
 	}
 
 	// Setup for next command
-	haspipe = ispipe(c->op);
-	if (ispipe(c->op))
+	haspipe = token_ispipe(c->op);
+	if (token_ispipe(c->op))
 	{
 		lastpipe[0] = currpipe[0];
 		lastpipe[1] = currpipe[1];
@@ -398,8 +404,9 @@ void	run_list(t_command *c)
 
 
 /* Parse */
+/*   parse commandline to linked list of commands */
 
-void	parse_commandline(char	*str)
+t_command	*parse_commandline(char *str)
 {
 	int			type;
 	char		*token;
@@ -409,47 +416,32 @@ void	parse_commandline(char	*str)
 	c = command_new();
 	head = c;
 	while ((str = get_next_token(str, &type, &token)) != NULL) {
-		if (isconnector(type))
+		if (token_isop(type))
 		{
-			if (c->op == -1 || isconnector(c->op))
+			if (c->op)
 			{
 				printf("Error: syntax error near unexpected token %s\n", token);
-				return ;
+				return (head);
 			}
 			c->op = type;
 		}
 		else
 		{
-			if (isconnector(c->op))
+			if (c->op)
 			{
 				t_command *new = command_new();
 				c->next = new;
 				c = new;
 			}
 			command_append_arg(c, token);
-			c->op = type;
 		}
 	}
 
 	// Add last ; if necessary
-	if (c->op == TOKEN_WORD)
+	if (!c->op)
 		c->op = type;
 
-	// Execute
-	if (head->argc)
-		run_list(head);
-
-	// Reap zombie processes
-	while(waitpid(-1,NULL,WNOHANG) > 0);
-
-	// Clear
-	t_command *tmp;
-	while (head)
-	{
-		tmp = head->next;
-		command_clear(head);
-		head = tmp;
-	}
+	return (head);
 }
 
 
@@ -463,8 +455,28 @@ int		main(int argc, char *argv[])
 		exit(1);
 	}
 
-	printf("Testing with string \"%s\"\n", argv[1]);
-	parse_commandline(argv[1]);
+	// Parse
+	/* printf("Testing with string \"%s\"\n", argv[1]); */
+	t_command *c;
+	c = parse_commandline(argv[1]);
+
+	// Execute
+	if (c->argc)
+		run_list(c);
+
+	// Cleanup
+	// - reap zombie processes
+	while(waitpid(-1,NULL,WNOHANG) > 0);
+
+	// - free
+	t_command *tmp;
+	while (c)
+	{
+		tmp = c->next;
+		command_clear(c);
+		c = tmp;
+	}
+
 	exit(0);
 }
 
