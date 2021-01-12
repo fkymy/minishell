@@ -6,43 +6,26 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/06 18:23:41 by tayamamo          #+#    #+#             */
-/*   Updated: 2020/11/17 07:05:33 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/12 16:11:10 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static void	free_null(char **ptr)
+char		*ft_strjoin_free(char *s1, char *s2)
 {
-	size_t	len;
-	char	*p;
+	char	*res;
 
-	if (!ptr || !*ptr)
-		return ;
-	if (*ptr)
-	{
-		len = ft_strlen(*ptr);
-		p = *ptr;
-		while (len--)
-			*(p++) = '\0';
-		free(*ptr);
-		*ptr = NULL;
-	}
-	return ;
-}
-
-static void	set_text(char *text[], char *tmp, const int fd)
-{
-	free_null(&(text[fd]));
-	text[fd] = ft_strdup(tmp);
-	free_null(&tmp);
+	res = ft_strjoin(s1, s2);
+	free(s1);
+	free(s2);
+	return (res);
 }
 
 static int	read_file(char *text[], const int fd)
 {
 	char	*buf;
 	ssize_t	size;
-	char	*tmp;
 
 	if (!(buf = malloc(sizeof(char) * (BUFFER_SIZE + 1))))
 		return (-1);
@@ -58,9 +41,7 @@ static int	read_file(char *text[], const int fd)
 		return (-1);
 	}
 	buf[size] = '\0';
-	tmp = ft_strjoin(text[fd], buf);
-	free(buf);
-	set_text(text, tmp, fd);
+	text[fd] = ft_strjoin_free(text[fd], buf);
 	if (!(text[fd]))
 		return (-1);
 	return (1);
@@ -68,25 +49,23 @@ static int	read_file(char *text[], const int fd)
 
 static int	set_line(char *text[], const int fd, char **line, char *ptr)
 {
-	char	*tmp;
-
 	if (ft_strlen(text[fd]))
 	{
 		if (!ft_strchr(text[fd], '\n'))
 		{
 			*line = ft_strdup(text[fd]);
-			free_null(&(text[fd]));
+			ft_free_null(&(text[fd]));
 			return (0);
 		}
 		*ptr = '\0';
 		*line = ft_strdup(text[fd]);
-		tmp = ft_strdup(ptr + 1);
-		set_text(text, tmp, fd);
+		ft_free_null(&(text[fd]));
+		text[fd] = ft_strdup(ptr + 1);
 	}
 	else
 	{
 		*line = ft_strdup(text[fd]);
-		free_null(&(text[fd]));
+		ft_free_null(&(text[fd]));
 		return (0);
 	}
 	return (1);
@@ -112,7 +91,7 @@ int			get_next_line(int fd, char **line)
 			break ;
 		else if (ret == -1)
 		{
-			free_null(&(text[fd]));
+			ft_free_null(&(text[fd]));
 			return (-1);
 		}
 	}
