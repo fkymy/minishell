@@ -6,19 +6,11 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/27 17:17:17 by yufukuya          #+#    #+#             */
-/*   Updated: 2020/07/09 16:27:07 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/12 18:07:53 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-
-static int	ft_isspace(int c)
-{
-	if (c == '\t' || c == '\n' || c == '\v' ||
-			c == '\f' || c == '\r' || c == ' ')
-		return (1);
-	return (0);
-}
 
 static int	ft_will_overflow(unsigned long n, int next_digit)
 {

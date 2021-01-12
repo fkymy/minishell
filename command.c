@@ -6,14 +6,9 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 19:37:34 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/11 19:45:59 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/12 18:29:05 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-/*
- * command is a linked list parsed from a commandline string.
- * op is the connecting opeartor ; and | (redirection is not op)
- */
 
 #include <stdlib.h>
 
@@ -34,10 +29,29 @@ t_command	*command_new(void)
 	return (c);
 }
 
+void		command_lstclear(t_command **c)
+{
+	t_command	*head;
+	t_command	*tmp;
+
+	if (c == NULL)
+		return ;
+	head = *c;
+	while (*c)
+	{
+		tmp = (*c)->next;
+		command_clear(*c);
+		*c = tmp;
+	}
+	head = NULL;
+}
+
 void		command_clear(t_command *c)
 {
 	int	i;
 
+	if (c == NULL)
+		return ;
 	i = 0;
 	while (i < c->argc)
 		free(c->argv[i++]);

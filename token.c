@@ -6,19 +6,13 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:53:11 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/11 21:55:59 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/12 18:07:21 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/libft.h"
 #include "vector_string.h"
 #include "token.h"
-
-static int	ft_isspace(int c)
-{
-	return (c == '\t' || c == '\n' || c == '\v' ||
-			c == '\f' || c == '\r' || c == ' ');
-}
 
 static int	ft_isspecial(int c)
 {
