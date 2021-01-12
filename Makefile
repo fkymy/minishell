@@ -2,11 +2,12 @@
 NAME := minishell
 CC := gcc
 CFLAGS := -g -Wall -Wextra -Werror
+CFLAGS += -g -fsanitize=address
 
 LIBFT_DIR := libft
 LIBFT := $(LIBFT_DIR)/libft.a
 
-INCLUDES := .
+INCLUDES := ./includes
 SRCS := main.c \
 
 OBJS := $(SRCS:.c=.o)
