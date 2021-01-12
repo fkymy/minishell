@@ -8,7 +8,6 @@ LIBFT_DIR := libft
 LIBFT := $(LIBFT_DIR)/libft.a
 
 INCLUDES := ./includes
-
 SRCS := main.c \
 		vector_string.c \
 		token.c \

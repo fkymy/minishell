@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/12 19:48:18 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/12 19:56:30 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@
 #include <stdarg.h>
 
 #include "libft/libft.h"
-#include "vector_string.h"
 #include "token.h"
 #include "command.h"
 
@@ -142,7 +141,6 @@ pid_t	start_command(t_command *c, char *envp[])
 	}
 	else if (pid == 0)
 	{
-		printf("%s\n", is_cmd_exist(path, c->argv[0]));
 		if (execve(is_cmd_exist(path, c->argv[0]), c->argv, envp) < 0)
 		{
 			perror("failed to execve");
@@ -278,8 +276,5 @@ int			main(int argc, char *argv[], char *envp[])
 		free(commandline);
 		command_lstclear(&c);
 	}
-
-	free(commandline);
-	command_lstclear(&c);
 	return (0);
 }
