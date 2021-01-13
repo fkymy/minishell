@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:30:31 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/11 21:30:35 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/13 17:34:05 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void	vector_append(t_vector_string *v, int c)
 		ft_memcpy(new_data, v->data, v->size);
 		free(v->data);
 		v->data = new_data;
-		v->capacity += new_capacity;
+		v->capacity = new_capacity;
 	}
 	v->data[v->size] = c;
 	++v->size;

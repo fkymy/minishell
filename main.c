@@ -6,11 +6,10 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/12 19:56:30 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/13 17:38:03 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "includes/minishell.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,9 +20,16 @@
 #include <errno.h>
 #include <stdarg.h>
 
+#include "includes/minishell.h"
 #include "libft/libft.h"
 #include "token.h"
 #include "command.h"
+
+/*
+** Globals
+*/
+
+char	**g_path;
 
 /*
 ** Main Utilities
@@ -127,7 +133,6 @@ char	*is_cmd_exist(char **paths, char *cmd)
 /*
 ** Execute
 */
-char	**path; // 一旦ここに置きます...
 
 pid_t	start_command(t_command *c, char *envp[])
 {
@@ -135,13 +140,10 @@ pid_t	start_command(t_command *c, char *envp[])
 
 	pid = fork();
 	if (pid < 0)
-	{
-		perror("Failed to fork");
-		exit(1);
-	}
+		die("Failed to fork");
 	else if (pid == 0)
 	{
-		if (execve(is_cmd_exist(path, c->argv[0]), c->argv, envp) < 0)
+		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) < 0)
 		{
 			perror("failed to execve");
 			_exit(1);
@@ -161,7 +163,6 @@ void	run_list(t_command *c, char *envp[])
 
 	while (c)
 	{
-		// 一時的なバリデーション...
 		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
 		{
 			printf("Error: invalid command in list.\n");
@@ -169,7 +170,6 @@ void	run_list(t_command *c, char *envp[])
 			continue ;
 		}
 
-		// Builtins
 		char **builtins = set_builtins_name();
 		if (is_cmd_builtins(c->argv[0], builtins))
 		{
@@ -186,10 +186,8 @@ void	run_list(t_command *c, char *envp[])
 			continue ;
 		}
 
-		// Start command
 		command_pid = start_command(c, envp);
 
-		// Wait for last child (blocking)
 		exited_pid = waitpid(command_pid, &status, 0);
 		assert(exited_pid == c->pid);
 		if (WIFEXITED(status))
@@ -220,8 +218,6 @@ t_command	*parse(char *commandline)
 
 	c = command_new();
 	head = c;
-
-	// get_next_tokenは最後読み込めなくなると 返り値=NULL, token = NULL, type = ';' になる
 	while ((commandline = get_next_token(commandline, &type, &token)) != NULL) {
 		if (token_isop(type))
 		{
@@ -243,11 +239,8 @@ t_command	*parse(char *commandline)
 			command_append_arg(c, token);
 		}
 	}
-
-	// 必要なら最後のcommandの後ろに';'があるようにする
 	if (!c->op)
 		c->op = type;
-
 	return (head);
 }
 
@@ -260,7 +253,7 @@ int			main(int argc, char *argv[], char *envp[])
 	if (argc != 1)
 		return (42);
 
-	if (!(path = set_path_name(envp)))
+	if (!(g_path = set_path_name(envp)))
 		die(strerror(errno));
 
 	while (42)
