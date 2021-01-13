@@ -6,26 +6,58 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/12 05:41:01 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/13 17:38:03 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "includes/minishell.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <assert.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdarg.h>
 
-int		is_cmd_builtins(char *cmd, char **builtins)
+#include "includes/minishell.h"
+#include "libft/libft.h"
+#include "token.h"
+#include "command.h"
+
+/*
+** Globals
+*/
+
+char	**g_path;
+
+/*
+** Main Utilities
+*/
+
+#ifdef DEBUG
+void	debug(const char *fmt, ...)
 {
-	int i;
+	va_list	params;
 
-	i = 0;
-	while (builtins[i])
-	{
-		if (!ft_strncmp(cmd, builtins[i], ft_strlen(cmd)))
-			if (!ft_strncmp(builtins[i], cmd, ft_strlen(builtins[i])))
-				return (0);
-		i++;
-	}
-	return (42);
+	va_start(params, fmt);
+	printf("[%d] ", getpid());
+	vprintf(fmt, params);
+	printf("\n");
+	va_end(params);
+}
+#else
+void	debug(const char *fmt, ...)
+{
+	(void)fmt;
+}
+#endif
+
+void	die(char *msg)
+{
+	ft_putstr_fd(msg, 2);
+	ft_putstr_fd("\n", 2);
+	exit(1);
 }
 
 char	**set_path_name(char *envp[])
@@ -48,7 +80,18 @@ char	**set_path_name(char *envp[])
 	return (path);
 }
 
-char	**set_builtins_name()
+int		is_cmd_builtins(char *cmd, char **builtins)
+{
+	int i;
+
+	i = 0;
+	while (builtins[i])
+		if (ft_strcmp(cmd, builtins[i++]) == 0)
+			return (0);
+	return (42);
+}
+
+char	**set_builtins_name(void)
 {
 	char	**builtins;
 
@@ -61,8 +104,7 @@ char	**set_builtins_name()
 	return (builtins);
 }
 
-char
-	*is_cmd_exist(char **paths, char *cmd)
+char	*is_cmd_exist(char **paths, char *cmd)
 {
 	int		i;
 	t_stat	stat_buf;
@@ -87,83 +129,145 @@ char
 	return (NULL);
 }
 
-int	main(int argc, char *argv[], char *envp[])
-{
-	char		**cmds;
-	char		*cmd;
-	char		**line;
-	pid_t		child_pid;
-	int			stat_loc;
-	int			ret;
-	char		**builtins;
-	char		**path;
 
-	(void)argc;
-	(void)argv;
-	ft_putstr_fd("よろしくお願いします！\n", 1);
-	if (argc != 1)
-		return (42);
-	builtins = set_builtins_name();
-	if (!(path = set_path_name(envp)))
+/*
+** Execute
+*/
+
+pid_t	start_command(t_command *c, char *envp[])
+{
+	pid_t	pid;
+
+	pid = fork();
+	if (pid < 0)
+		die("Failed to fork");
+	else if (pid == 0)
 	{
-		ft_putstr_fd(strerror(errno), 2);
-		ft_putstr_fd("\n", 2);
-		exit(1);
+		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) < 0)
+		{
+			perror("failed to execve");
+			_exit(1);
+		}
+		perror("This should not be printed if execvp is successful");
+		_exit(1);
 	}
-	while (42)
+	c->pid = pid;
+	return (c->pid);
+}
+
+void	run_list(t_command *c, char *envp[])
+{
+	pid_t 	command_pid;
+	pid_t	exited_pid;
+	int		status;
+
+	while (c)
 	{
-		ft_putstr_fd("minishell>", 1);
-		if (!(line = malloc(sizeof(char *))))
+		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
 		{
-			ft_putstr_fd(strerror(errno), 2);
-			ft_putstr_fd("\n", 2);
-			exit(1);
-		}
-		if ((ret = get_next_line(0, line)) == -1)
-		{
-			ft_putstr_fd("gnl failed.\n", 2);
-			exit(1);
-		}
-		cmds = ft_split(*line, ' ');
-		if (is_cmd_builtins(cmds[0], builtins))
-			continue ;
-		if (!ft_strncmp(cmds[0], "exit", ft_strlen(cmds[0])))
-			break ;
-		if (!ft_strncmp(cmds[0], "cd", ft_strlen(cmds[0])))
-		{
-			if (chdir(cmds[1]) < 0)
-				ft_putstr_fd(strerror(errno), 2);
+			printf("Error: invalid command in list.\n");
+			c = c->next;
 			continue ;
 		}
-		child_pid = fork();
-		if (child_pid < 0)
-			exit(1);
-		cmd = is_cmd_exist(path, cmds[0]);
-		if (child_pid == 0 && cmd)
+
+		char **builtins = set_builtins_name();
+		if (is_cmd_builtins(c->argv[0], builtins))
 		{
-			if ((ret = execve(cmd, cmds, envp)) == -1)
-			{
+			c = c->next;
+			continue ;
+		}
+		if (ft_strcmp(c->argv[0], "exit") == 0)
+			exit(0);
+		if (ft_strcmp(c->argv[0], "cd") == 0)
+		{
+			if (chdir(c->argv[1]) < 0)
 				ft_putstr_fd(strerror(errno), 2);
-				ft_putstr_fd("\n", 2);
-				exit(1);
-			}
+			c = c->next;
+			continue ;
+		}
+
+		command_pid = start_command(c, envp);
+
+		exited_pid = waitpid(command_pid, &status, 0);
+		assert(exited_pid == c->pid);
+		if (WIFEXITED(status))
+		{
+			debug("child with pid %d exited with status %d", exited_pid, WEXITSTATUS(status));
 		}
 		else
 		{
-			waitpid(child_pid, &stat_loc, WUNTRACED);
+			debug("child exited abnormally with status: %d", status);
 		}
-		ft_free_null(line);
-		free(line);
-		ft_free_null(cmds);
-		free(cmds);
-		ft_free_null(&cmd);
-		free(cmd);
+		c = c->next;
 	}
-	ft_free_null(line);
-	free(line);
-	ft_free_null(cmds);
-	free(cmds);
-	ft_free_null(&cmd);
-	free(cmd);
+}
+
+/*
+** Parse
+**
+** 文字列commandlineをパースして線形リストt_commandを形成します
+** リストのつなぎ目となるopはmandatoryだと';'と'|'のみです
+*/
+
+t_command	*parse(char *commandline)
+{
+	int			type;
+	char		*token;
+	t_command	*head;
+	t_command	*c;
+
+	c = command_new();
+	head = c;
+	while ((commandline = get_next_token(commandline, &type, &token)) != NULL) {
+		if (token_isop(type))
+		{
+			if (c->op)
+			{
+				printf("minishell: syntax error near unexpected token %s\n", token);
+				return (head);
+			}
+			c->op = type;
+		}
+		else
+		{
+			if (c->op)
+			{
+				t_command *new = command_new();
+				c->next = new;
+				c = new;
+			}
+			command_append_arg(c, token);
+		}
+	}
+	if (!c->op)
+		c->op = type;
+	return (head);
+}
+
+int			main(int argc, char *argv[], char *envp[])
+{
+	char		*commandline;
+	t_command	*c;
+
+	(void)argv;
+	if (argc != 1)
+		return (42);
+
+	if (!(g_path = set_path_name(envp)))
+		die(strerror(errno));
+
+	while (42)
+	{
+		ft_putstr_fd("minishell>", 1);
+		if (get_next_line(0, &commandline) == -1)
+			die("gnl failed.\n");
+
+		c = parse(commandline);
+		if (c->argc)
+			run_list(c, envp);
+
+		free(commandline);
+		command_lstclear(&c);
+	}
 	return (0);
 }
