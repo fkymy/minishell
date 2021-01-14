@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/13 17:38:03 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/14 16:50:37 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,7 +258,7 @@ int			main(int argc, char *argv[], char *envp[])
 
 	while (42)
 	{
-		ft_putstr_fd("minishell>", 1);
+		ft_putstr_fd("minishell>", 2);
 		if (get_next_line(0, &commandline) == -1)
 			die("gnl failed.\n");
 
