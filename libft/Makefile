@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/01/12 17:24:00 by yufukuya         ###   ########.fr        #
+#    Updated: 2021/01/14 16:14:22 by yufukuya         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -74,17 +74,17 @@ objects_bonus := $(bonus:.c=.o)
 all: $(NAME)
 
 $(NAME): $(objects)
-	ar -r $@ $^
+	@ar -r $@ $^
 
 $(objects): %.o: %.c
-	$(CC) -c $(CFLAGS) -I$(includes) $< -o $@
+	@$(CC) -c $(CFLAGS) -I$(includes) $< -o $@
 
 .PHONY: bonus
 bonus: $(objects_bonus)
-	ar -r $(NAME) $^
+	@ar -r $(NAME) $^
 
 $(objects_bonus): %.o: %.c
-	$(CC) -c $(CFLAGS) -I$(includes) $< -o $@
+	@$(CC) -c $(CFLAGS) -I$(includes) $< -o $@
 
 .PHONY: re fclean clean
 re: fclean all

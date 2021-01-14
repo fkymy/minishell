@@ -1,5 +1,14 @@
 # minishell
 
+#### Makefileに *.c *.o *.h を追加する
+
+`make source`
+
+#### テストする
+
+`make test`
+
+
 ## 全体像
 
 ![Parsing Commandline](https://www.dropbox.com/s/4gsycvbf4yi3f31/parsing_commandline.png?raw=1)
@@ -62,18 +71,7 @@ void simple_pipe(char *cmd1, char *argv1, char *cmd2, char * argv2) {
 ### redirect
 
 
-## テスター
-
-https://github.com/cacharle/minishell_test
 
 
 ## 参考
-
-
-
-
-
-
-Grammer:
-
 
