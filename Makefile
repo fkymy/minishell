@@ -1,10 +1,10 @@
-# Makefile for minishell, updated Thu Jan 14 15:04:02 JST 2021
+# Makefile for minishell, updated Fri Jan 15 01:15:55 JST 2021
 
 SRC := command.c main.c token.c vector_string.c
 
 OBJ := command.o main.o token.o vector_string.o
 
-HDR := minishell.h command.h token.h vector_string.h
+HDR := command.h token.h vector_string.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- run 'make source' to add files
 
@@ -15,8 +15,6 @@ CFLAGS := -Wall -Wextra -Werror
 CFLAGS += -g -fsanitize=address
 
 BINDIR := /usr/local/bin
-
-HDRDIR := includes
 
 LIBS := -Llibft -lft
 
@@ -73,7 +71,7 @@ source:
 	@echo '' >> Makefile
 	@echo OBJ := `ls *.c | sed s/c$$/o/` >> Makefile
 	@echo '' >> Makefile
-	@echo HDR := `ls includes ; ls *.h` >> Makefile
+	@echo HDR := `ls *.h` >> Makefile
 	@echo '' >> Makefile
 	@sed -n -e '/^# DO NOT ADD OR MODIFY/,$$p' < Makefile.bak >> Makefile
 
