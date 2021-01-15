@@ -27,29 +27,31 @@ function exec_test()
 	TEST2=$(echo $@ "; exit" | bash 2>&-)
 	ES_2=$?
 	if [ "$TEST1" == "$TEST2" ] && [ "$ES_1" == "$ES_2" ]; then
-		printf " $BOLDGREEN%s$RESET" "✓ "
+		printf " $GREEN%s$RESET" "[OK] "
 	else
-		printf " $BOLDRED%s$RESET" "✗ "
+		printf " $RED%s$RESET" "[KO] "
 	fi
 	printf "$CYAN \"$@\" $RESET"
 	if [ "$TEST1" != "$TEST2" ]; then
 		echo
 		echo
-		printf $BOLDRED"Your output : \n%.20s\n$BOLDRED$TEST1\n%.20s$RESET\n" "-----------------------------------------" "-----------------------------------------"
-		printf $BOLDGREEN"Expected output : \n%.20s\n$BOLDGREEN$TEST2\n%.20s$RESET\n" "-----------------------------------------" "-----------------------------------------"
+		printf $RED"Your output : \n%.20s\n$RED$TEST1\n%.20s$RESET\n" "-----------------------------------------" "-----------------------------------------"
+		printf $WHITE"Expected output : \n%.20s\n$WHITE$TEST2\n%.20s$RESET\n" "-----------------------------------------" "-----------------------------------------"
 	fi
 	if [ "$ES_1" != "$ES_2" ]; then
 		echo
 		echo
-		printf $BOLDRED"Your exit status : $BOLDRED$ES_1$RESET\n"
-		printf $BOLDGREEN"Expected exit status : $BOLDGREEN$ES_2$RESET\n"
+		printf $RED"Your exit status : $RED$ES_1$RESET\n"
+		printf $WHITE"Expected exit status : $WHITE$ES_2$RESET\n"
 	fi
 	echo
 	sleep 0.1
 }
 
+# Mandatory Part
+
 exec_test 'echo hello'
 exec_test 'echo hello world'
 exec_test 'echo hello ; echo world'
-exec_test 'echo hello ; echo world ;'
-exec_test 'echo 01234567890123456789 ; echo'
+exec_test 'echo hello ; echo world'
+exec_test 'echo 01234567890123456789 ; echo ; echo ; echo'

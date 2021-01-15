@@ -76,7 +76,7 @@ source:
 	@sed -n -e '/^# DO NOT ADD OR MODIFY/,$$p' < Makefile.bak >> Makefile
 
 test:
-	cd test && bash test.sh
+	@cd test && bash test.sh
 
 lint:
 	~/.norminette/norminette.rb $(SRC) $(HDR)
