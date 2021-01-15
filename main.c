@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/13 17:38:03 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/15 01:18:04 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,13 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 
-#include "includes/minishell.h"
 #include "libft/libft.h"
 #include "token.h"
 #include "command.h"
+
+typedef struct stat	t_stat;
 
 /*
 ** Globals
@@ -258,7 +260,7 @@ int			main(int argc, char *argv[], char *envp[])
 
 	while (42)
 	{
-		ft_putstr_fd("minishell>", 1);
+		ft_putstr_fd("minishell>", 2);
 		if (get_next_line(0, &commandline) == -1)
 			die("gnl failed.\n");
 
