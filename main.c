@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/15 01:18:04 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/17 12:06:00 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ char	**set_builtins_name(void)
 {
 	char	**builtins;
 
-	builtins = ft_split("ls echo cat cd pwd export unset env exit", ' ');
+	builtins = ft_split("wc ls echo cat cd pwd export unset env exit", ' ');
 	if (!builtins)
 	{
 		ft_putstr_fd(strerror(errno), 2);
@@ -131,6 +131,47 @@ char	*is_cmd_exist(char **paths, char *cmd)
 	return (NULL);
 }
 
+void	run_pipe(t_command *c, char *envp[])
+{
+	int		pipefd[2];
+	pid_t	child;
+	int		status;
+
+	if (c->op != TOKEN_PIPE)
+	{
+		return ;
+	}
+	if (pipe(pipefd) == -1)
+		die(strerror(errno));
+	child = fork();
+	if (child == -1)
+		die(strerror(errno));
+	else if (child == 0)
+	{
+		close(pipefd[0]); // 読み込み先をクローズ
+		if (dup2(pipefd[1], 1) == -1) // 書き込み先を標準出力に
+			die(strerror(errno));
+		/* close(1); */
+		close(pipefd[1]); // 書き込み先をクローズ
+		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) == -1)
+			die(strerror(errno));
+	}
+	else
+	{
+		close(pipefd[1]); // 書き込み先をクローズ
+		if (dup2(pipefd[0], 0) == -1) // 読み込み先を標準入力へ
+			die(strerror(errno));
+		/* close(0); */
+		close(pipefd[0]); // 読み込み先をクローズ
+		if (waitpid(child, &status, 0) == -1)
+			die(strerror(errno));
+		c = c->next;
+		run_pipe(c, envp);
+	}
+	close(pipefd[0]);
+	close(pipefd[1]);
+	return ;
+}
 
 /*
 ** Execute
@@ -188,17 +229,19 @@ void	run_list(t_command *c, char *envp[])
 			continue ;
 		}
 
-		command_pid = start_command(c, envp);
-
-		exited_pid = waitpid(command_pid, &status, 0);
-		assert(exited_pid == c->pid);
-		if (WIFEXITED(status))
+		if (c->op == TOKEN_PIPE)
 		{
-			debug("child with pid %d exited with status %d", exited_pid, WEXITSTATUS(status));
+			run_pipe(c, envp);
 		}
 		else
 		{
-			debug("child exited abnormally with status: %d", status);
+			command_pid = start_command(c, envp);
+			exited_pid = waitpid(command_pid, &status, 0);
+			assert(exited_pid == c->pid);
+			if (WIFEXITED(status))
+				debug("child with pid %d exited with status %d", exited_pid, WEXITSTATUS(status));
+			else
+				debug("child exited abnormally with status: %d", status);
 		}
 		c = c->next;
 	}
