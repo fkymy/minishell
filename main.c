@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/17 16:31:28 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/17 17:21:04 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,10 +241,10 @@ int			parse(char *commandline, t_command **c)
 				die("parse failed");
 		}
 	}
-	if (!current->op)
-		current->op = type;
 	if (current->op == TOKEN_OTHER)
 		die("parse failed");
+	if (!current->op)
+		current->op = type;
 	return (0);
 }
 
