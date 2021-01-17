@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/15 01:18:04 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/17 16:31:28 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,39 +211,41 @@ void	run_list(t_command *c, char *envp[])
 ** リストのつなぎ目となるopはmandatoryだと';'と'|'のみです
 */
 
-t_command	*parse(char *commandline)
+int			parse(char *commandline, t_command **c)
 {
 	int			type;
 	char		*token;
-	t_command	*head;
-	t_command	*c;
+	t_command	*current;
+	t_command	*new;
 
-	c = command_new();
-	head = c;
+	if (!(*c = command_new()))
+		die("parse failed");
+	current = *c;
 	while ((commandline = get_next_token(commandline, &type, &token)) != NULL) {
 		if (token_isop(type))
 		{
-			if (c->op)
-			{
-				printf("minishell: syntax error near unexpected token %s\n", token);
-				return (head);
-			}
-			c->op = type;
+			if (current->op)
+				return (-1);
+			current->op = type;
 		}
 		else
 		{
-			if (c->op)
+			if (current->op)
 			{
-				t_command *new = command_new();
-				c->next = new;
-				c = new;
+				if (!(new = command_new()))
+					die("parse failed");
+				current->next = new;
+				current = new;
 			}
-			command_append_arg(c, token);
+			if (command_append_arg(current, token) < 0)
+				die("parse failed");
 		}
 	}
-	if (!c->op)
-		c->op = type;
-	return (head);
+	if (!current->op)
+		current->op = type;
+	if (current->op == TOKEN_OTHER)
+		die("parse failed");
+	return (0);
 }
 
 int			main(int argc, char *argv[], char *envp[])
@@ -257,15 +259,15 @@ int			main(int argc, char *argv[], char *envp[])
 
 	if (!(g_path = set_path_name(envp)))
 		die(strerror(errno));
-
 	while (42)
 	{
 		ft_putstr_fd("minishell>", 2);
-		if (get_next_line(0, &commandline) == -1)
-			die("gnl failed.\n");
+		if (get_next_line(0, &commandline) < 0)
+			die("gnl failed.");
 
-		c = parse(commandline);
-		if (c->argc)
+		if (parse(commandline, &c) < 0)
+			ft_putstr_fd("minishell: syntax error\n", 2);
+		else if (c->argc)
 			run_list(c, envp);
 
 		free(commandline);
