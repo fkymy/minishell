@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/17 20:36:36 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/17 22:33:32 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,59 +131,32 @@ char	*is_cmd_exist(char **paths, char *cmd)
 	return (NULL);
 }
 
-void	run_pipe(t_command *c, char *envp[])
-{
-	int		pipefd[2];
-	pid_t	child;
-	int		status;
-
-	if (c->op != TOKEN_PIPE)
-	{
-		return ;
-	}
-	if (pipe(pipefd) == -1)
-		die(strerror(errno));
-	child = fork();
-	if (child == -1)
-		die(strerror(errno));
-	else if (child == 0)
-	{
-		close(pipefd[0]); // 読み込み先をクローズ
-		if (dup2(pipefd[1], 1) == -1) // 書き込み先を標準出力に接続
-			die(strerror(errno));
-		close(pipefd[1]); // 書き込み先をクローズ
-		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) == -1)
-			die(strerror(errno));
-	}
-	else
-	{
-		close(pipefd[1]); // 書き込み先をクローズ
-		if (dup2(pipefd[0], 0) == -1) // 読み込み先を標準入力に接続
-			die(strerror(errno));
-		close(pipefd[0]); // 読み込み先をクローズ
-		if (waitpid(child, &status, 0) == -1)
-			die(strerror(errno));
-		c = c->next;
-		run_pipe(c, envp);
-	}
-	close(pipefd[0]);
-	close(pipefd[1]);
-	return ;
-}
-
 /*
 ** Execute
 */
 
-pid_t	start_command(t_command *c, char *envp[])
+pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 {
 	pid_t	pid;
+	int currentpipe[2];
+
+	if (c->op == TOKEN_PIPE)
+		pipe(currentpipe)
 
 	pid = fork();
 	if (pid < 0)
 		die("Failed to fork");
 	else if (pid == 0)
 	{
+		// pipe処理
+		if (haspipe)
+		{
+			// pipeを持つ側
+		}
+		if (c->op == TOKEN_PIPE)
+		{
+			// pipeをする側
+		}
 		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) < 0)
 		{
 			perror("failed to execve");
@@ -193,7 +166,63 @@ pid_t	start_command(t_command *c, char *envp[])
 		_exit(1);
 	}
 	c->pid = pid;
+	if c->op == TOKEN_PIPE 
+		haspipe = 1;
 	return (c->pid);
+}
+
+// 一時的
+pid_t tmp;
+
+t_command	*run_pipe(t_command *c, int haspipe, int lastpipe[2], char *envp[])
+{
+	int		pipefd[2];
+	pid_t	pid;
+
+	// echo hello | wc;
+	// pipeをする側 command |
+	// pipeを持つ側 | command
+
+	if (c == NULL)
+		return c;
+	int ispipe = c->op == TOKEN_PIPE ? 1 : 0;
+	if (!ispipe && !haspipe)
+		return c;
+
+	if (ispipe)
+		pipe(pipefd);
+
+	pid = fork();
+
+	if (pid == 0)
+	{
+		if (haspipe)
+		{
+			close(lastpipe[1]); // 書き込み先をクローズ
+			if (dup2(lastpipe[0], 0) == -1) // 読み込み先を標準入力に接続
+				die(strerror(errno));
+			close(lastpipe[0]); // 読み込み先をクローズ
+		}
+		if (ispipe)
+		{
+			close(pipefd[0]); // 読み込み先をクローズ
+			if (dup2(pipefd[1], 1) == -1) // 書き込み先を標準出力に接続
+				die(strerror(errno));
+			close(pipefd[1]); // 書き込み先をクローズ
+		}
+
+		execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp);
+		_exit(1);
+	}
+	// shellに戻る
+	if (haspipe)
+	{
+		close(lastpipe[0]);
+		close(lastpipe[1]);
+	}
+	tmp = pid;
+
+	return (run_pipe(c->next, ispipe, pipefd, envp));
 }
 
 void	run_list(t_command *c, char *envp[])
@@ -204,43 +233,37 @@ void	run_list(t_command *c, char *envp[])
 
 	while (c)
 	{
-		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
-		{
-			printf("Error: invalid command in list.\n");
-			c = c->next;
-			continue ;
-		}
+		// && ||
+		// run_pipe
+		// - start_command
+		// 1. 全てはpipelineである
+		pid = run_pipe();
 
-		char **builtins = set_builtins_name();
-		if (is_cmd_builtins(c->argv[0], builtins))
-		{
-			c = c->next;
-			continue ;
-		}
-		if (ft_strcmp(c->argv[0], "exit") == 0)
-			exit(0);
-		if (ft_strcmp(c->argv[0], "cd") == 0)
-		{
-			if (chdir(c->argv[1]) < 0)
-				ft_putstr_fd(strerror(errno), 2);
-			c = c->next;
-			continue ;
-		}
-
+		// 2. pipeとstart_commandを完全に分けて考える
 		if (c->op == TOKEN_PIPE)
-		{
-			run_pipe(c, envp);
-		}
+			c = run_pipe();
 		else
 		{
-			command_pid = start_command(c, envp);
-			exited_pid = waitpid(command_pid, &status, 0);
-			assert(exited_pid == c->pid);
-			if (WIFEXITED(status))
-				debug("child with pid %d exited with status %d", exited_pid, WEXITSTATUS(status));
-			else
-				debug("child exited abnormally with status: %d", status);
+			// start_command
 		}
+
+		// 3. run_listとstart_commandにpipe管理をさせる (1と思想は同じ)
+		int haspipe = 0;
+		int lastpipe[2] = { -1, -1 };
+		while (c)
+		{
+			command_pid = start_command(c, &haspipe, lastpipe, envp);
+			if (haspipe)
+				c = c->next;
+			else
+				break ;
+		}
+		exited_pid = waitpid(command_pid, &status, 0);
+		assert(exited_pid == c->pid);
+		if (WIFEXITED(status))
+			debug("child with pid %d exited with status %d", exited_pid, WEXITSTATUS(status));
+		else
+			debug("child exited abnormally with status: %d", status);
 		c = c->next;
 	}
 }
