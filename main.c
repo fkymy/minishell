@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/17 12:06:00 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/17 12:34:51 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,9 +149,8 @@ void	run_pipe(t_command *c, char *envp[])
 	else if (child == 0)
 	{
 		close(pipefd[0]); // 読み込み先をクローズ
-		if (dup2(pipefd[1], 1) == -1) // 書き込み先を標準出力に
+		if (dup2(pipefd[1], 1) == -1) // 書き込み先を標準出力に接続
 			die(strerror(errno));
-		/* close(1); */
 		close(pipefd[1]); // 書き込み先をクローズ
 		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) == -1)
 			die(strerror(errno));
@@ -159,9 +158,8 @@ void	run_pipe(t_command *c, char *envp[])
 	else
 	{
 		close(pipefd[1]); // 書き込み先をクローズ
-		if (dup2(pipefd[0], 0) == -1) // 読み込み先を標準入力へ
+		if (dup2(pipefd[0], 0) == -1) // 読み込み先を標準入力に接続
 			die(strerror(errno));
-		/* close(0); */
 		close(pipefd[0]); // 読み込み先をクローズ
 		if (waitpid(child, &status, 0) == -1)
 			die(strerror(errno));
