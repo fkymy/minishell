@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/17 17:21:04 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/18 11:33:35 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ char	**set_builtins_name(void)
 {
 	char	**builtins;
 
-	builtins = ft_split("ls echo cat cd pwd export unset env exit", ' ');
+	builtins = ft_split("wc ls echo cat cd pwd export unset env exit", ' ');
 	if (!builtins)
 	{
 		ft_putstr_fd(strerror(errno), 2);
@@ -131,20 +131,36 @@ char	*is_cmd_exist(char **paths, char *cmd)
 	return (NULL);
 }
 
-
 /*
 ** Execute
 */
 
-pid_t	start_command(t_command *c, char *envp[])
+pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 {
 	pid_t	pid;
+	int		currentpipe[2];
 
+	if (c->op == TOKEN_PIPE)
+		pipe(currentpipe);
 	pid = fork();
 	if (pid < 0)
 		die("Failed to fork");
 	else if (pid == 0)
 	{
+		if (*haspipe) // pipeを持つ側
+		{
+			close(lastpipe[1]); // 書き込み先をクローズ
+			if (dup2(lastpipe[0], 0) == -1) // 読み込み先を標準入力に rename
+				die(strerror(errno));
+			close(lastpipe[0]); // 読み込み先をクローズ
+		}
+		if (c->op == TOKEN_PIPE) // pipeをする側
+		{
+			close(currentpipe[0]); // 読み込み先をクローズ
+			if (dup2(currentpipe[1], 1) == -1) // 書き込み先を標準出力に rename
+				die(strerror(errno));
+			close(currentpipe[1]); // 書き込み先をクローズ
+		}
 		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) < 0)
 		{
 			perror("failed to execve");
@@ -153,8 +169,36 @@ pid_t	start_command(t_command *c, char *envp[])
 		perror("This should not be printed if execvp is successful");
 		_exit(1);
 	}
-	c->pid = pid;
-	return (c->pid);
+	if (*haspipe)
+	{
+		close(lastpipe[0]);
+		close(lastpipe[1]);
+	}
+	if (c->op == TOKEN_PIPE)
+	{
+		*haspipe = 1;
+		ft_memmove(lastpipe, currentpipe, sizeof(currentpipe));
+	}
+	else
+		*haspipe = 0;
+	return (pid);
+}
+
+pid_t	run_pipeline(t_command **c, char *envp[])
+{
+	pid_t	pid;
+	int		haspipe = 0;
+	int		lastpipe[2] = { -1, -1 };
+
+	while (c)
+	{
+		pid = start_command(*c, &haspipe, lastpipe, envp);
+		if (haspipe)
+			*c = (*c)->next;
+		else
+			break ;
+	}
+	return (pid);
 }
 
 void	run_list(t_command *c, char *envp[])
@@ -187,19 +231,13 @@ void	run_list(t_command *c, char *envp[])
 			c = c->next;
 			continue ;
 		}
-
-		command_pid = start_command(c, envp);
-
+		command_pid = run_pipeline(&c, envp);
 		exited_pid = waitpid(command_pid, &status, 0);
-		assert(exited_pid == c->pid);
+		assert(exited_pid == command_pid);
 		if (WIFEXITED(status))
-		{
 			debug("child with pid %d exited with status %d", exited_pid, WEXITSTATUS(status));
-		}
 		else
-		{
 			debug("child exited abnormally with status: %d", status);
-		}
 		c = c->next;
 	}
 }
