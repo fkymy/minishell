@@ -42,16 +42,13 @@ forkをすると親と子プロセスはtext segmentを共有し、register, dat
 
 ### プロセス間通信
 
-プロセスは隔離されたアドレス空間で動く。そんなプロセス同士でコミュニケーションするためにUnixにはいくつかのIPC(Interprocess Communication)メカニズムがある。
-
-![Parsing Commandline](https://www.dropbox.com/s/pqjnhwfp08c19uc/Screen%20Shot%202021-01-18%20at%2018.43.20.png?raw=1)
-
-IPCの中で最も古くて身近なのがhalf-duplex pipes：
+プロセスは隔離されたアドレス空間で動く。そんなプロセス同士でコミュニケーションするためにUnixにはいくつかのIPC(Interprocess Communication)メカニズムがある。IPCの中で最も古くて身近なのがhalf-duplex pipe：
 
 ![Parsing Commandline](https://www.dropbox.com/s/4qjs6g1h6888g6x/half_duplexpipe.png?raw=1)
 
-1. 古典的なhalf-duplex pipeはデータが一方向にのみ流れる。
-2. pipeは共通の親を持つプロセス間のみでしか使えない。pipe自体はkernel側に存在するので、作成元のプロセスか、そこから継承したプロセスでないと、そのpipeのありかを指すすべがない。（名前ありのFIFOSなら可能）
+古典的なhalf-duplex pipeはデータが一方向にのみ流れる。
+
+pipeは共通の親を持つプロセス間のみでしか使えない。pipe自体はkernel側に存在するので、作成元のプロセスか、そこから継承したプロセスでないと、そのpipeのありかを指すすべがない。（名前ありのFIFOSなら可能）
 
 そのため通常親プロセスがpipeを作ってからforkし、親と子の間でIPCチャネルを作る：
 
@@ -64,7 +61,8 @@ pipeのルール：
 1. 全てのwrite endがcloseされたらreadはEOFを返す。pipe fdはストリーム側のfdなので、空のpipeをreadしようとするとブロックする。バッファが満タンのpipeにwriteしようとするとブロックする。
 2. read endが全てcloseされたpipeにwriteしようとすると SIGPIPE signalが発生する。それを無視したりsignal handlerからすぐreturnするとwriteは-1を返し、errnoの値がEPIPEになる
 
-パイプラインの実装：
+
+#### パイプラインの実装：
 
 ![Parsing Commandline](https://www.dropbox.com/s/h9jvf02g804tob1/pipeline.png?raw=1)
 
@@ -88,12 +86,12 @@ void simple_pipe(char *cmd1, char *argv1, char *cmd2, char * argv2) {
     if (child2 == 0) {
         close(pipefd[1]);
         dup2(pipefd[0], 0);
-        close(pipefd[0]); // closeしないとread endがブロッキングし、ずっと待った状態になる
+        close(pipefd[0]);
         execvp(cmd2, argv2);
     }
     assert(child2 > 0);
 
-    close(pipefd[0]);  // closeしないとread endがブロッキングし、ずっと待った状態になる
+    close(pipefd[0]);
     close(pipefd[1]);
     r = waitpid(child1, &status, 0);
     r = waitpid(child2, &status, 0);
