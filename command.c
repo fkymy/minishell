@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 19:37:34 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/12 18:29:05 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/18 11:37:45 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,6 @@ t_command	*command_new(void)
 	c->argc = 0;
 	c->argv = NULL;
 	c->op = 0;
-
-	c->pid = -1;
 	return (c);
 }
 
