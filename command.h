@@ -22,7 +22,7 @@ typedef struct	s_command
 }				t_command;
 
 t_command		*command_new(void);
-void			command_append_arg(t_command *c, char *word);
+int				command_append_arg(t_command *c, char *word);
 void			command_clear(t_command *c);
 void			command_lstclear(t_command **c);
 
