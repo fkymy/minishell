@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:53:11 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/12 18:07:21 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/17 17:21:50 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "vector_string.h"
 #include "token.h"
 
-static int	ft_isspecial(int c)
+static int	isshellspecial(int c)
 {
 	return (c == '<' || c == '>' || c == '&' || c == '|' ||
 			c == ';' || c == '(' || c == ')' || c == '#');
@@ -40,6 +40,7 @@ int			token_ispipe(int t)
 {
 	return (t == TOKEN_PIPE);
 }
+
 
 char		*get_next_token(char *str, int *type, char **token)
 {
@@ -74,10 +75,10 @@ char		*get_next_token(char *str, int *type, char **token)
 		vector_append(&v, str[1]);
 		str += 2;
 	}
-	else if (ft_isspecial(*str))
+	else if (isshellspecial(*str))
 	{
 		if (*str == ';' || *str == '&')
-			*type = TOKEN_SEPARATOR; // Do not support background conditionals
+			*type = TOKEN_SEPARATOR;
 		else if (*str == '|')
 			*type = TOKEN_PIPE;
 		else
@@ -91,7 +92,7 @@ char		*get_next_token(char *str, int *type, char **token)
 		int quoted = 0;
 		while ((*str && quoted)
 				|| (*str && !ft_isspace(*str)
-					&& !ft_isspecial(*str)))
+					&& !isshellspecial(*str)))
 		{
 			if ((*str == '\"' || *str == '\'') && !quoted)
 				quoted = *str;
@@ -109,6 +110,13 @@ char		*get_next_token(char *str, int *type, char **token)
 	}
 
 	vector_append(&v, '\0');
+	if (v.error)
+	{
+		vector_free(&v);
+		*token = NULL;
+		*type = TOKEN_OTHER;
+		return (NULL);
+	}
 	*token = v.data;
 	return (str);
 }

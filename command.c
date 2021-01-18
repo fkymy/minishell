@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 19:37:34 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/12 18:29:05 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/17 16:31:12 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@ t_command	*command_new(void)
 {
 	t_command	*c;
 
-	if (!(c = malloc(sizeof(t_command))))
+	c = malloc(sizeof(t_command));
+	if (!c)
 		return (NULL);
 	c->next = NULL;
 	c->argc = 0;
@@ -58,12 +59,14 @@ void		command_clear(t_command *c)
 	free(c);
 }
 
-void		command_append_arg(t_command *c, char *word)
+int			command_append_arg(t_command *c, char *word)
 {
 	char	**new_argv;
 	int		i;
 
 	new_argv = malloc(sizeof(char *) * (c->argc + 2));
+	if (!new_argv)
+		return (-1);
 	i = 0;
 	while (i < c->argc)
 	{
@@ -76,4 +79,5 @@ void		command_append_arg(t_command *c, char *word)
 	c->argv[c->argc] = word;
 	c->argv[c->argc + 1] = NULL;
 	++c->argc;
+	return (0);
 }
