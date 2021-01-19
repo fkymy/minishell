@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/18 11:33:35 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/19 16:55:56 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,6 +139,7 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 {
 	pid_t	pid;
 	int		currentpipe[2];
+	int		status;
 
 	if (c->op == TOKEN_PIPE)
 		pipe(currentpipe);
@@ -178,6 +179,8 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 	{
 		*haspipe = 1;
 		ft_memmove(lastpipe, currentpipe, sizeof(currentpipe));
+		if (waitpid(pid, &status, 0) == -1)
+			die(strerror(errno));
 	}
 	else
 		*haspipe = 0;
