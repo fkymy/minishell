@@ -80,6 +80,3 @@ test:
 
 lint:
 	~/.norminette/norminette.rb $(SRC) $(HDR)
-
-debug: $(OBJ) $(LIBFT)
-	$(CC) $(CFLAGS) -D DEBUG -o $(NAME) $(OBJ) $(LIBS)
