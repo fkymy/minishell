@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/19 15:46:46 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/19 18:37:36 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,7 @@
 #include <sys/stat.h>
 
 #include "libft/libft.h"
-#include "token.h"
-#include "command.h"
+#include "minishell.h"
 
 typedef struct stat	t_stat;
 
@@ -144,62 +143,7 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 			close(currentpipe[1]);
 		}
 
-		// redirection対応
-		// traverse argv to check > file pair (if cannot open, No such file or directory error)
-		// keep opening and dupping
-		// when no more redirections, execute.
-		int i = 0;
-		int j = 0;
-		int fd = -1;
-		char **newargv = malloc(sizeof(char *) * (c->argc + 1));
-
-		while (i < c->argc)
-		{
-			if (ft_strcmp(c->argv[i], "<") == 0)
-			{
-				fd = open(c->argv[i + 1], O_RDONLY);
-				if (fd == -1)
-					die(strerror(errno));
-				else
-					printf("< opened fd: %d\n", fd);
-				dup2(fd, 0);
-				close(fd);
-				free(c->argv[i]);
-				free(c->argv[i + 1]);
-				i += 2;
-			}
-			else if (ft_strcmp(c->argv[i], ">") == 0)
-			{
-				fd = open(c->argv[i + 1], O_WRONLY|O_CREAT|O_TRUNC, 0666);
-				if (fd == -1)
-					die(strerror(errno));
-				else
-					printf("> opened fd: %d\n", fd);
-				dup2(fd, 1);
-				close(fd);
-				free(c->argv[i]);
-				free(c->argv[i + 1]);
-				i += 2;
-			}
-			else if (ft_strcmp(c->argv[i], ">>") == 0)
-			{
-				fd = open(c->argv[i + 1], O_WRONLY|O_CREAT|O_APPEND, 0666);
-				if (fd == -1)
-					die(strerror(errno));
-				else
-					printf(">> opened fd: %d\n", fd);
-				dup2(fd, 1);
-				close(fd);
-				free(c->argv[i]);
-				free(c->argv[i + 1]);
-				i += 2;
-			}
-			else
-				newargv[j++] = c->argv[i++];
-		}
-		newargv[j] = NULL;
-		free(c->argv);
-		c->argv = newargv;
+		handle_redir(c);
 
 		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) < 0)
 		{
@@ -274,10 +218,6 @@ void	run_list(t_command *c, char *envp[])
 		command_pid = run_pipeline(&c, envp);
 		exited_pid = waitpid(command_pid, &status, 0);
 		assert(exited_pid == command_pid);
-		if (WIFEXITED(status))
-			printf("child with pid %d exited with status %d\n", exited_pid, WEXITSTATUS(status));
-		else
-			printf("child exited abnormally with status: %d\n", status);
 		c = c->next;
 	}
 }

@@ -6,13 +6,12 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:53:11 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/17 17:21:50 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/19 18:35:30 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/libft.h"
-#include "vector_string.h"
-#include "token.h"
+#include "minishell.h"
 
 static int	isshellspecial(int c)
 {
