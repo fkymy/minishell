@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/19 16:55:56 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/20 04:21:47 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ char	**set_builtins_name(void)
 {
 	char	**builtins;
 
-	builtins = ft_split("wc ls echo cat cd pwd export unset env exit", ' ');
+	builtins = ft_split("time sleep wc ls echo cat cd pwd export unset env exit", ' ');
 	if (!builtins)
 	{
 		ft_putstr_fd(strerror(errno), 2);
@@ -139,7 +139,6 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 {
 	pid_t	pid;
 	int		currentpipe[2];
-	int		status;
 
 	if (c->op == TOKEN_PIPE)
 		pipe(currentpipe);
@@ -179,8 +178,6 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 	{
 		*haspipe = 1;
 		ft_memmove(lastpipe, currentpipe, sizeof(currentpipe));
-		if (waitpid(pid, &status, 0) == -1)
-			die(strerror(errno));
 	}
 	else
 		*haspipe = 0;
@@ -189,19 +186,27 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 
 pid_t	run_pipeline(t_command **c, char *envp[])
 {
-	pid_t	pid;
-	int		haspipe = 0;
-	int		lastpipe[2] = { -1, -1 };
+	t_command	*head;
+	int			haspipe = 0;
+	int			lastpipe[2] = { -1, -1 };
+	int			status;
 
+	head = *c;
 	while (c)
 	{
-		pid = start_command(*c, &haspipe, lastpipe, envp);
+		(*c)->pid = start_command(*c, &haspipe, lastpipe, envp);
 		if (haspipe)
 			*c = (*c)->next;
 		else
 			break ;
 	}
-	return (pid);
+	while (head != *c)
+	{
+		if (waitpid(head->pid, &status, 0) < 0)
+			die(strerror(errno));
+		head = head->next;
+	}
+	return ((*c)->pid);
 }
 
 void	run_list(t_command *c, char *envp[])

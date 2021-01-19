@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 19:39:32 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/18 08:45:01 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/20 02:58:32 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ typedef struct	s_command
 	int					argc;
 	char				**argv;
 	int					op;
+	pid_t				pid;
 }				t_command;
 
 t_command		*command_new(void);
