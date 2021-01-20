@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/20 04:21:47 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/20 17:04:56 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,34 +184,26 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 	return (pid);
 }
 
-pid_t	run_pipeline(t_command **c, char *envp[])
+t_command	*do_pipeline(t_command *c, char *envp[])
 {
-	t_command	*head;
 	int			haspipe = 0;
 	int			lastpipe[2] = { -1, -1 };
-	int			status;
 
-	head = *c;
 	while (c)
 	{
-		(*c)->pid = start_command(*c, &haspipe, lastpipe, envp);
-		if (haspipe)
-			*c = (*c)->next;
+		c->pid = start_command(c, &haspipe, lastpipe, envp);
+		if (haspipe && c->next)
+			c = c->next;
+		else if (haspipe && !c->next)
+			die("未実装");
 		else
 			break ;
 	}
-	while (head != *c)
-	{
-		if (waitpid(head->pid, &status, 0) < 0)
-			die(strerror(errno));
-		head = head->next;
-	}
-	return ((*c)->pid);
+	return (c);
 }
 
 void	run_list(t_command *c, char *envp[])
 {
-	pid_t 	command_pid;
 	pid_t	exited_pid;
 	int		status;
 
@@ -239,13 +231,14 @@ void	run_list(t_command *c, char *envp[])
 			c = c->next;
 			continue ;
 		}
-		command_pid = run_pipeline(&c, envp);
-		exited_pid = waitpid(command_pid, &status, 0);
-		assert(exited_pid == command_pid);
+		c = do_pipeline(c, envp);
+		exited_pid = waitpid(c->pid, &status, 0);
+		assert(exited_pid == c->pid);
 		if (WIFEXITED(status))
 			debug("child with pid %d exited with status %d", exited_pid, WEXITSTATUS(status));
 		else
 			debug("child exited abnormally with status: %d", status);
+		while (wait(NULL) > 0);
 		c = c->next;
 	}
 }
