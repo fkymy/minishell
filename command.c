@@ -6,13 +6,13 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 19:37:34 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/18 11:37:45 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/19 18:35:53 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 
-#include "command.h"
+#include "minishell.h"
 
 t_command	*command_new(void)
 {
