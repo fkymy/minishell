@@ -103,6 +103,7 @@ exec_test 'echo 01234567890123456789 ; echo ; echo ; echo'
 exec_test 'ls | wc | wc'
 exec_test 'ls | wc | wc ; echo test'
 exec_test 'ls | wc | wc ; echo test | wc'
+exec_test 'sleep 1 | echo 1 ; sleep 2 | echo 2'
 
 # > < >> Redirection
 
@@ -142,4 +143,3 @@ exec_test_with_files 'echo test666666 >> test6.txt | head -n 1 < test6.txt > tes
 # redirections and pipes
 exec_test_with_files 'cat test1.txt | cat < test2.txt'
 exec_test_with_files 'cat < test1.txt | cat > test2.txt ; cat test2.txt'
-

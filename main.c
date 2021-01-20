@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/19 18:37:36 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/20 17:44:02 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ char	**set_builtins_name(void)
 {
 	char	**builtins;
 
-	builtins = ft_split("wc ls echo cat cd pwd export unset env exit", ' ');
+	builtins = ft_split("time sleep wc ls echo cat cd pwd export unset env exit", ' ');
 	if (!builtins)
 	{
 		ft_putstr_fd(strerror(errno), 2);
@@ -168,26 +168,26 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 	return (pid);
 }
 
-pid_t	run_pipeline(t_command **c, char *envp[])
+t_command	*do_pipeline(t_command *c, char *envp[])
 {
-	pid_t	pid;
-	int		haspipe = 0;
-	int		lastpipe[2] = { -1, -1 };
+	int			haspipe = 0;
+	int			lastpipe[2] = { -1, -1 };
 
 	while (c)
 	{
-		pid = start_command(*c, &haspipe, lastpipe, envp);
-		if (haspipe)
-			*c = (*c)->next;
+		c->pid = start_command(c, &haspipe, lastpipe, envp);
+		if (haspipe && c->next)
+			c = c->next;
+		else if (haspipe && !c->next)
+			die("未実装");
 		else
 			break ;
 	}
-	return (pid);
+	return (c);
 }
 
 void	run_list(t_command *c, char *envp[])
 {
-	pid_t 	command_pid;
 	pid_t	exited_pid;
 	int		status;
 
@@ -215,9 +215,10 @@ void	run_list(t_command *c, char *envp[])
 			c = c->next;
 			continue ;
 		}
-		command_pid = run_pipeline(&c, envp);
-		exited_pid = waitpid(command_pid, &status, 0);
-		assert(exited_pid == command_pid);
+		c = do_pipeline(c, envp);
+		exited_pid = waitpid(c->pid, &status, 0);
+		assert(exited_pid == c->pid);
+		while (wait(NULL) > 0);
 		c = c->next;
 	}
 }
