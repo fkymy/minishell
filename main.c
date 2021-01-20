@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/18 11:33:35 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/19 18:37:36 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,7 @@
 #include <sys/stat.h>
 
 #include "libft/libft.h"
-#include "token.h"
-#include "command.h"
+#include "minishell.h"
 
 typedef struct stat	t_stat;
 
@@ -36,24 +35,6 @@ char	**g_path;
 /*
 ** Main Utilities
 */
-
-#ifdef DEBUG
-void	debug(const char *fmt, ...)
-{
-	va_list	params;
-
-	va_start(params, fmt);
-	printf("[%d] ", getpid());
-	vprintf(fmt, params);
-	printf("\n");
-	va_end(params);
-}
-#else
-void	debug(const char *fmt, ...)
-{
-	(void)fmt;
-}
-#endif
 
 void	die(char *msg)
 {
@@ -147,20 +128,23 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 		die("Failed to fork");
 	else if (pid == 0)
 	{
-		if (*haspipe) // pipeを持つ側
+		if (*haspipe)
 		{
-			close(lastpipe[1]); // 書き込み先をクローズ
-			if (dup2(lastpipe[0], 0) == -1) // 読み込み先を標準入力に rename
+			close(lastpipe[1]);
+			if (dup2(lastpipe[0], 0) == -1)
 				die(strerror(errno));
-			close(lastpipe[0]); // 読み込み先をクローズ
+			close(lastpipe[0]);
 		}
-		if (c->op == TOKEN_PIPE) // pipeをする側
+		if (c->op == TOKEN_PIPE)
 		{
-			close(currentpipe[0]); // 読み込み先をクローズ
-			if (dup2(currentpipe[1], 1) == -1) // 書き込み先を標準出力に rename
+			close(currentpipe[0]);
+			if (dup2(currentpipe[1], 1) == -1)
 				die(strerror(errno));
-			close(currentpipe[1]); // 書き込み先をクローズ
+			close(currentpipe[1]);
 		}
+
+		handle_redir(c);
+
 		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) < 0)
 		{
 			perror("failed to execve");
@@ -234,10 +218,6 @@ void	run_list(t_command *c, char *envp[])
 		command_pid = run_pipeline(&c, envp);
 		exited_pid = waitpid(command_pid, &status, 0);
 		assert(exited_pid == command_pid);
-		if (WIFEXITED(status))
-			debug("child with pid %d exited with status %d", exited_pid, WEXITSTATUS(status));
-		else
-			debug("child exited abnormally with status: %d", status);
 		c = c->next;
 	}
 }

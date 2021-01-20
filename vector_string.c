@@ -6,14 +6,14 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:30:31 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/17 17:19:16 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/19 18:35:41 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 
-#include "vector_string.h"
 #include "libft/libft.h"
+#include "minishell.h"
 
 void	vector_initialize(t_vector_string *v)
 {

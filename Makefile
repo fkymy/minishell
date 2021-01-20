@@ -1,10 +1,10 @@
-# Makefile for minishell, updated Fri Jan 15 01:15:55 JST 2021
+# Makefile for minishell, updated Tue Jan 19 18:35:00 JST 2021
 
-SRC := command.c main.c token.c vector_string.c
+SRC := command.c main.c redir.c token.c vector_string.c
 
-OBJ := command.o main.o token.o vector_string.o
+OBJ := command.o main.o redir.o token.o vector_string.o
 
-HDR := command.h token.h vector_string.h
+HDR := minishell.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- run 'make source' to add files
 
@@ -80,6 +80,3 @@ test:
 
 lint:
 	~/.norminette/norminette.rb $(SRC) $(HDR)
-
-debug: $(OBJ) $(LIBFT)
-	$(CC) $(CFLAGS) -D DEBUG -o $(NAME) $(OBJ) $(LIBS)
