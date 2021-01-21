@@ -6,12 +6,13 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:53:11 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/19 18:35:30 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/21 20:35:16 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/libft.h"
 #include "minishell.h"
+#include <stdio.h>
 
 static int	isshellspecial(int c)
 {
@@ -90,22 +91,17 @@ char		*get_next_token(char *str, int *type, char **token)
 		*type = TOKEN_WORD;
 		int quoted = 0;
 		while ((*str && quoted)
-				|| (*str && !ft_isspace(*str)
-					&& !isshellspecial(*str)))
+				|| (*str && !ft_isspace(*str) && !isshellspecial(*str)))
 		{
 			if ((*str == '\"' || *str == '\'') && !quoted)
 				quoted = *str;
 			else if (*str == quoted)
 				quoted = 0;
-			else if (*str == '\\' && str[1] != '\0' && quoted != '\'')
-			{
-				vector_append(&v, str[1]);
-				++str;
-			}
-			else
-				vector_append(&v, *str);
+			vector_append(&v, *str);
 			++str;
 		}
+		if (quoted)
+			v.error = 1;
 	}
 
 	vector_append(&v, '\0');
