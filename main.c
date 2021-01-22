@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 18:01:28 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/23 08:08:47 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,7 +224,6 @@ void	run_list(t_command *c)
 		assert(exited_pid == c->pid);
 		while (wait(NULL) > 0);
 		c = c->next;
-		handle_signals();
 	}
 }
 
