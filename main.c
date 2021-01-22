@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 18:01:28 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/23 07:58:27 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -275,7 +275,10 @@ int			parse(char *commandline, t_command **c)
 int			main(int argc, char *argv[], char *envp[])
 {
 	char		*commandline;
+	char		*tmp;
 	t_command	*c;
+	int			ret;
+	int			last_ret;
 
 	(void)argv;
 	(void)envp;
@@ -284,21 +287,40 @@ int			main(int argc, char *argv[], char *envp[])
 
 	if (!(g_path = set_path_name()))
 		die(strerror(errno));
+	last_ret = 1;
 	while (42)
 	{
-		ft_putstr_fd("minishell>", 2);
+		if (last_ret == 1)
+		{
+			ft_putstr_fd("minishell>", 2);
+			commandline = ft_strdup("");
+		}
 		g_pid = 0;
 		handle_signals();
-		if (get_next_line(0, &commandline) < 0)
+		if ((ret = get_next_line(0, &tmp)) < 0)
 			die("gnl failed.");
 
-		if (parse(commandline, &c) < 0)
-			ft_putstr_fd("minishell: syntax error\n", 2);
-		else if (c->argc)
-			run_list(c);
-
-		free(commandline);
-		command_lstclear(&c);
+		commandline = ft_strjoin(commandline, tmp);
+		if (ret == 0 && tmp[0] == '\0')
+		{
+			if (last_ret == 1 && commandline[0] == '\0')
+			{
+				ft_putstr_fd("\033[0K", 2);
+				ft_putstr_fd("exit\n", 2);
+				break ;
+			}
+		}
+		free(tmp);
+		if (ret == 1)
+		{
+			if (parse(commandline, &c) < 0)
+				ft_putstr_fd("minishell: syntax error\n", 2);
+			else if (c->argc)
+				run_list(c);
+			free(commandline);
+			command_lstclear(&c);
+		}
+		last_ret = ret;
 	}
 	return (0);
 }
