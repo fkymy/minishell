@@ -150,51 +150,99 @@ exec_test_with_files 'cat < test1.txt | cat > test2.txt ; cat test2.txt'
 
 # quotes should work in simple use cases
 exec_test "echo hello'world'foo"
+exec_test "echo \"oh'hello\"world\"yeah'wow\""
+exec_test "echo \"oh'hello\"wor\"\"''ld\"yeah'wow\""
+exec_test "echo \"oh'h\"\"ello\"wor\"\"''''''ld\"yeah'w''ow\""
+exec_test "echo hel'lo;''wor|$'''ld yeah"
 
-# echo hello'world'foo
-# echo "oh'hello"world"yeah'wow"
-# echo "oh'hello"wor""''ld"yeah'wow"
-# echo "oh'h""ello"wor""''''''ld"yeah'w''ow"
+# quotes should work empty
+exec_test "echo ''"
+exec_test "echo ''''''"
+exec_test "echo \"\""
+exec_test "echo \"\"\"\"\"\""
 
-# echo hel'lo;''wor|$'''ld yeah
+# quotes should work with whitespaces
+exec_test "echo '   ' | cat -e"
+exec_test "echo '   ''      ''  ' | cat -e"
+exec_test "echo \"             \" | cat -e"
+exec_test "echo \"  \"\"    \"\"         \""
 
-# echo hello ';' cat ; echo hello ";" cat
-# echo hello '|' cat ; echo hello "|" cat
-# echo hello '>' '>' ; echo hello ">" ">" ; rm '>'
-# echo hello '>>' '>>' ; echo hello ">>" ">>" ; rm '>>'
+# quotes should not add operators
+exec_test "echo hello ';' cat ; echo hello \";\" cat"
+exec_test "echo hello '|' cat ; echo hello \"|\" cat"
+exec_test " echo hello '>' '>' ; echo hello \">\" \">\""
+exec_test " echo hello '>>' '>>' ; echo hello \">>\" \">>\""
 
-exec_test "echo > \">\" hello ; cat \">\" ; rm \">\""
+# quotes do not split fields
+exec_test "\"echo hello\""
+exec_test "\'echo hello\'"
+exec_test "\"  echo hello there my friend | cat    \""
+exec_test "\'  echo hello there my friend | cat    \'"
+
+# Single quotes
+
+# single quote should preserve literal values
+exec_test "echo 'hello \$USER %* # @ ^ &* ( @ ! ) there | cat ; wc ; {}|\\\\\\ '"
+
+# Double quotes
+
+# double quotes should preserve literal values
+exec_test "echo \"hello USER %* #' @ ^ &* ( @ ! ) there | cat ; wc ; {}|\""
+
+# double quotes backslash should escape only if followed by $ " \
+exec_test "echo \" hello \;there\2my\0friend\""
+exec_test "echo \" hello \there\my\nfriend\""
+
+exec_test "echo \" \\\" lit\\\"erally \""
+exec_test "echo \" \\\$USER lit\\\$USERerally \""
+exec_test "echo \" \\\\ lit\\\\erally \""
+
+# double quotes should expand $
+exec_test "echo \"$\""
+exec_test "echo \"  $  $  $ $ $ $\""
+exec_test "echo \"   \$USER \$CWD \""
+exec_test "echo \"   aaa\$USER bbb\$CWDccc \""
+
+# double quotes should add empty to unknown variable
+exec_test "echo \"  \$UNKNOWNVARIABLE  \$_WHATIS_this999 \$_32175891  \$________\""
+
+# exec_test "echo > \">\" hello ; cat \">\" ; rm \">\""
 # exec_test "echo hello \' >  > \' > '>' > \" > >\" world ; cat \" > >\" ; rm \" > >\""
 # echo hello ' >  > ' > '>' > " > >" world ; cat " > >" ; rm " > >"
 
 
-# Variables
+# Expansion
 # dollar sign should print
 exec_test 'echo $'
-exec_test 'echo $ $'
+exec_test 'echo $ $ $$$$$'
+
+# dollar sign should expand
+exec_test 'echo $USER $CWD'
+exec_test 'echo $UNKNWONVARIABLE $_WHATis_This999 $_1324810'
+
 
 # variable expansion should work with ;
-exec_test 'export A=aaa ; echo $A ; unset A'
-exec_test 'A=aaa ; echo $A'
+# exec_test 'export A=aaa ; echo $A ; unset A'
+# exec_test 'A=aaa ; echo $A'
 
 # variable expansion order is undefined in pipe
-exec_test 'B=bbb | echo $B | cat'
-exec_test 'echo $B | B=bbb | cat'
+# exec_test 'B=bbb | echo $B | cat'
+# exec_test 'echo $B | B=bbb | cat'
 
-exec_test 'export B=bbb ; echo $B | cat'
+# exec_test 'export B=bbb ; echo $B | cat'
 
 # variable expansion is before redirection
-exec_test 'C=ccc ; echo $C > $C ; cat $C'
+# exec_test 'C=ccc ; echo $C > $C ; cat $C'
 
 # variable expansion is before word
-exec_test "ECHO=echo ; CAT=cat ; $ECHO $CAT | $CAT"
+# exec_test "ECHO=echo ; CAT=cat ; $ECHO $CAT | $CAT"
 
 # parameter expansion should work in sequence
-exec_test 'echo $? $? $? $? $?'
-exec_test 'true ; echo $? ; false ; echo $? ; true | echo $? ; false | echo $?'
+# exec_test 'echo $? $? $? $? $?'
+# exec_test 'true ; echo $? ; false ; echo $? ; true | echo $? ; false | echo $?'
 
 # parameter expansion should be undefined in pipe
-exec_test 'true ; echo $? | cat | false | echo $?'
+# exec_test 'true ; echo $? | cat | false | echo $?'
 
 # variable expansion as special characters
 
@@ -204,9 +252,6 @@ exec_test 'true ; echo $? | cat | false | echo $?'
 
 # ECHO='echo hello world' ; $ECHO ; echo $ECHO
 # ECHO="echo hello | cat | wc" ; $ECHO ; echo $ECHO
-
-# "echo hello"
-# 'echo hello'
 
 # echo hello | cat
 # CAT=cat ; echo hello | $CAT
@@ -228,4 +273,4 @@ exec_test 'true ; echo $? | cat | false | echo $?'
 
 
 # Builtins
-exec_test 'pwd ; cd .. | pwd'
+# exec_test 'pwd ; cd .. | pwd'
