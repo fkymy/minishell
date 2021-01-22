@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 19:28:28 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/22 20:28:28 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,16 +42,16 @@ typedef struct	wordexp {
 	size_t		offset;
 }				t_wordexp;
 
-static void		command_clear_argv(t_command *c)
+static void		free_argv(char **argv)
 {
 	int	i;
 
-	if (c == NULL)
+	if (argv == NULL)
 		return ;
 	i = 0;
-	while (i < c->argc)
-		free(c->argv[i++]);
-	free(c->argv);
+	while (argv[i])
+		free(argv[i++]);
+	free(argv);
 }
 
 int			wordexp_append_arg(struct wordexp *w, char *word)
@@ -92,9 +92,10 @@ char	*expand(char *str, t_vector_string *v)
 	++str;
 
 	int len = 0;
+	// "の中なので\0がくることもない
 	while (ft_isalnum(str[len]) || str[len] == '_')
 		++len;
-	char *envvar = ft_substr(str, 0, len + 1);
+	char *envvar = ft_substr(str, 0, len + 1); // BUG:
 	envvar[len] = '=';
 	str += len;
 
@@ -170,9 +171,63 @@ char	*handle_quotes(t_wordexp *w, char *str, int quoted)
 
 char	*handle_expansion(t_wordexp *w, char *str, int quoted)
 {
-	// same as above, except it will split
-	(void)w;
 	(void)quoted;
+
+	extern char **environ;
+	t_vector_string v;
+
+	vector_initialize(&v);
+
+	if (*str != '$')
+		return (str);
+
+	if (!ft_isalpha(str[1]) && str[1] != '_')
+	{
+		vector_append(&v, *str);
+		return (str + 1);
+	}
+	++str;
+
+	int len = 0;
+	while (str[len] && (ft_isalnum(str[len]) || str[len] == '_'))
+		++len;
+	char *envvar = malloc(sizeof(char) * (len + 2));
+	ft_memcpy(envvar, str, len);
+	envvar[len] = '=';
+	envvar[len + 1] = '\0';
+
+	str += len;
+
+	int i = 0;
+	while (environ[i] && ft_strncmp(environ[i], envvar, ft_strlen(envvar)))
+		i++;
+
+	if (environ[i])
+	{
+		printf("found environ: %s\n", environ[i]);
+		int j = ft_strlen(envvar);
+		while (environ[i][j])
+		{
+			vector_append(&v, environ[i][j]);
+			j++;
+		}
+	}
+	free(envvar);
+	vector_append(&v, '\0');
+	printf("v.data %s\n", v.data);
+	if (w->offset)
+	{
+		char *tmp = ft_strjoin(w->wordv[w->wordc - 1], v.data);
+		free(w->wordv[w->wordc - 1]);
+		w->wordv[w->wordc - 1] = tmp;
+		free(v.data);
+		w->offset += v.size;
+	}
+	else
+	{
+		wordexp_append_arg(w, v.data);
+		w->offset += v.size;
+	}
 	return (str);
 }
 
@@ -203,21 +258,21 @@ char	*handle_word(t_wordexp *w, char *str)
 	return (str);
 }
 
-void	handle_expansion_and_unquote(t_command *c)
+char	**handle_expansion_and_unquote(char **argv)
 {
 	t_wordexp w;
 	w.wordc = 0;
 	w.wordv = NULL;
 
 	int i = 0;
-	while (i < c->argc)
+	while (argv[i])
 	{
-		/* printf("handling c->argv[%d]: %s\n", i, c->argv[i]); */
+		printf("handling c->argv[%d]: %s\n", i, argv[i]);
 		// echo $USER aaa$USER"bbb 'ccc' """"$USER "$USERddd
 
 		w.offset = 0;
 		int quoted = 0;
-		char *str = c->argv[i];
+		char *str = argv[i];
 		while (*str)
 		{
 			if ((*str == '\'' || *str == '\"') && !quoted)
@@ -245,6 +300,6 @@ void	handle_expansion_and_unquote(t_command *c)
 		printf("w.wordv[%d]: %s\n", i, w.wordv[i]);
 	}
 
-	command_clear_argv(c);
-	c->argv = w.wordv;
+	free_argv(argv);
+	return (w.wordv);
 }
