@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 14:00:57 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/22 18:00:50 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ int				token_ispipe(int t);
 char			*get_next_token(char *str, int *type, char **token);
 
 /* redir.c */
-void			handle_redir(t_command *c);
+char			**handle_redir(char **argv);
 
 /* main.c */
 void			die(char *msg);
