@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 19:19:17 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/22 19:29:33 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,19 +43,20 @@ void	die(char *msg)
 	exit(1);
 }
 
-char	**set_path_name(char *envp[])
+char	**set_path_name(void)
 {
 	int		i;
 	char	*tmp;
 	char	**path;
+	extern char	**environ;
 
 	i = 0;
-	while (envp[i] && ft_strncmp(envp[i], "PATH", 4))
+	while (environ[i] && ft_strncmp(environ[i], "PATH", 4))
 		i++;
 	path = NULL;
-	if (envp[i])
+	if (environ[i])
 	{
-		if (!(tmp = ft_substr(envp[i], 5, ft_strlen(envp[i]))))
+		if (!(tmp = ft_substr(environ[i], 5, ft_strlen(environ[i]))))
 			return (NULL);
 		if (!(path = ft_split(tmp, ':')))
 			return (NULL);
@@ -116,37 +117,37 @@ char	*is_cmd_exist(char **paths, char *cmd)
 ** Execute
 */
 
-pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
+pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 {
-	pid_t	pid;
-	int		currentpipe[2];
+	extern char	**environ;
+	pid_t		pid;
+	int			newpipe[2];
 
-	if (c->op == TOKEN_PIPE)
-		pipe(currentpipe);
+	if (ispipe)
+		pipe(newpipe);
 	pid = fork();
 	if (pid < 0)
 		die("Failed to fork");
 	else if (pid == 0)
 	{
-		if (*haspipe)
+		if (haspipe)
 		{
 			close(lastpipe[1]);
 			if (dup2(lastpipe[0], 0) == -1)
 				die(strerror(errno));
 			close(lastpipe[0]);
 		}
-		if (c->op == TOKEN_PIPE)
+		if (ispipe)
 		{
-			close(currentpipe[0]);
-			if (dup2(currentpipe[1], 1) == -1)
+			close(newpipe[0]);
+			if (dup2(newpipe[1], 1) == -1)
 				die(strerror(errno));
-			close(currentpipe[1]);
+			close(newpipe[1]);
 		}
 
-		handle_redir(c);
-		handle_expansion_and_unquote(c);
+		argv = handle_redir(argv);
 
-		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) < 0)
+		if (execve(is_cmd_exist(g_path, argv[0]), argv, environ) < 0)
 		{
 			perror("failed to execve");
 			_exit(1);
@@ -154,32 +155,33 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 		perror("This should not be printed if execvp is successful");
 		_exit(1);
 	}
-	if (*haspipe)
+	if (haspipe)
 	{
 		close(lastpipe[0]);
 		close(lastpipe[1]);
 	}
-	if (c->op == TOKEN_PIPE)
+	if (ispipe)
 	{
-		*haspipe = 1;
-		ft_memmove(lastpipe, currentpipe, sizeof(currentpipe));
+		lastpipe[0] = newpipe[0];
+		lastpipe[1] = newpipe[1];
 	}
-	else
-		*haspipe = 0;
 	return (pid);
 }
 
-t_command	*do_pipeline(t_command *c, char *envp[])
+t_command	*do_pipeline(t_command *c)
 {
-	int			haspipe = 0;
-	int			lastpipe[2] = { -1, -1 };
+	int	ispipe = 0;
+	int	haspipe = 0;
+	int	lastpipe[2] = { -1, -1 };
 
 	while (c)
 	{
-		c->pid = start_command(c, &haspipe, lastpipe, envp);
-		if (haspipe && c->next)
+		ispipe = c->op == TOKEN_PIPE ? 1 : 0;
+		c->pid = start_command(c->argv, ispipe, haspipe, lastpipe);
+		haspipe = ispipe;
+		if (ispipe && c->next)
 			c = c->next;
-		else if (haspipe && !c->next)
+		else if (ispipe && !c->next)
 			die("未実装");
 		else
 			break ;
@@ -187,7 +189,7 @@ t_command	*do_pipeline(t_command *c, char *envp[])
 	return (c);
 }
 
-void	run_list(t_command *c, char *envp[])
+void	run_list(t_command *c)
 {
 	pid_t	exited_pid;
 	int		status;
@@ -216,7 +218,7 @@ void	run_list(t_command *c, char *envp[])
 			c = c->next;
 			continue ;
 		}
-		c = do_pipeline(c, envp);
+		c = do_pipeline(c);
 		exited_pid = waitpid(c->pid, &status, 0);
 		assert(exited_pid == c->pid);
 		while (wait(NULL) > 0);
@@ -274,10 +276,11 @@ int			main(int argc, char *argv[], char *envp[])
 	t_command	*c;
 
 	(void)argv;
+	(void)envp;
 	if (argc != 1)
 		return (42);
 
-	if (!(g_path = set_path_name(envp)))
+	if (!(g_path = set_path_name()))
 		die(strerror(errno));
 	while (42)
 	{
@@ -288,7 +291,7 @@ int			main(int argc, char *argv[], char *envp[])
 		if (parse(commandline, &c) < 0)
 			ft_putstr_fd("minishell: syntax error\n", 2);
 		else if (c->argc)
-			run_list(c, envp);
+			run_list(c);
 
 		free(commandline);
 		command_lstclear(&c);
