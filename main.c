@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/21 17:43:36 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/22 17:15:40 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,11 +178,9 @@ t_command	*do_pipeline(t_command *c)
 	{
 		ispipe = c->op == TOKEN_PIPE ? 1 : 0;
 		c->pid = start_command(c->argv, ispipe, haspipe, lastpipe);
+		haspipe = ispipe;
 		if (ispipe && c->next)
-		{
 			c = c->next;
-			haspipe = 1;
-		}
 		else if (ispipe && !c->next)
 			die("未実装");
 		else
