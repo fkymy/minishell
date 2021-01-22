@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/20 17:44:02 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/22 15:59:22 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,10 +216,12 @@ void	run_list(t_command *c, char *envp[])
 			continue ;
 		}
 		c = do_pipeline(c, envp);
+		g_pid = c->pid;
 		exited_pid = waitpid(c->pid, &status, 0);
 		assert(exited_pid == c->pid);
 		while (wait(NULL) > 0);
 		c = c->next;
+		handle_signals();
 	}
 }
 
@@ -281,6 +283,8 @@ int			main(int argc, char *argv[], char *envp[])
 	while (42)
 	{
 		ft_putstr_fd("minishell>", 2);
+		g_pid = 0;
+		handle_signals();
 		if (get_next_line(0, &commandline) < 0)
 			die("gnl failed.");
 

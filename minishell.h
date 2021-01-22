@@ -6,12 +6,17 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/20 17:40:35 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/22 14:00:57 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+
+/* signal */
+volatile sig_atomic_t	g_pid;
+void			signal_handler(int signum);
+void			handle_signals(void);
 
 /* command.c */
 typedef struct	s_command
