@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/20 17:44:02 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/22 19:19:17 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,6 +144,7 @@ pid_t	start_command(t_command *c, int *haspipe, int lastpipe[2], char *envp[])
 		}
 
 		handle_redir(c);
+		handle_expansion_and_unquote(c);
 
 		if (execve(is_cmd_exist(g_path, c->argv[0]), c->argv, envp) < 0)
 		{
@@ -260,9 +261,9 @@ int			parse(char *commandline, t_command **c)
 				die("parse failed");
 		}
 	}
-	if (current->op == TOKEN_OTHER)
-		die("parse failed");
-	if (!current->op)
+	if (type == TOKEN_OTHER)
+		die("一時的：get_next_token内部でエラーが起きたらNULLを返しtypeがTOKEN_OTHERになる");
+	if (current->op == 0)
 		current->op = type;
 	return (0);
 }

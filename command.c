@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 19:37:34 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/19 18:35:53 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/22 13:18:30 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ void		command_clear(t_command *c)
 	i = 0;
 	while (i < c->argc)
 		free(c->argv[i++]);
+	free(c->argv);
 	free(c);
 }
 
