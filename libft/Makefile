@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/01/14 16:14:22 by yufukuya         ###   ########.fr        #
+#    Updated: 2021/01/23 14:26:41 by tayamamo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,7 +64,8 @@ bonus := ft_lstnew.c \
 		 ft_lstiter.c \
 		 ft_lstmap.c \
 		 get_next_line.c \
-		 ft_free_null.c
+		 ft_free_null.c \
+		 ft_strjoin_free.c
 
 objects := $(mandatory:.c=.o)
 
