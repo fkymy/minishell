@@ -41,6 +41,14 @@ function exec_test_with_files()
 	ES_2=$?
     rm test[1-6].txt
 	if [ "$TEST1" == "$TEST2" ] && [ "$ES_1" == "$ES_2" ]; then
+        echo "[OK] " $@ >> results.txt
+	else
+        echo "[KO] " $@ >> results.txt
+	fi
+    echo $TEST1 >> results.txt
+    echo $TEST2 >> results.txt
+    echo >> results.txt
+	if [ "$TEST1" == "$TEST2" ] && [ "$ES_1" == "$ES_2" ]; then
 		printf " $GREEN%s$RESET" "[OK] "
 	else
 		printf " $RED%s$RESET" "[KO] "
@@ -69,6 +77,14 @@ function exec_test()
 	TEST2=$(echo $@ "; exit" | bash 2>&-)
 	ES_2=$?
 	if [ "$TEST1" == "$TEST2" ] && [ "$ES_1" == "$ES_2" ]; then
+        echo "[OK] " $@ >> results.txt
+	else
+        echo "[KO] " $@ >> results.txt
+	fi
+    echo $TEST1 >> results.txt
+    echo $TEST2 >> results.txt
+    echo >> results.txt
+	if [ "$TEST1" == "$TEST2" ] && [ "$ES_1" == "$ES_2" ]; then
 		printf " $GREEN%s$RESET" "[OK] "
 	else
 		printf " $RED%s$RESET" "[KO] "
@@ -91,6 +107,8 @@ function exec_test()
 }
 
 # Mandatory Part
+echo > results.txt ;
+
 
 # ; Separator
 exec_test 'echo hello'
@@ -214,12 +232,13 @@ exec_test "echo \"  \$UNKNOWNVARIABLE  \$_WHATIS_this999 \$_32175891  \$________
 # Expansion
 # dollar sign should print
 exec_test 'echo $'
-exec_test 'echo $ $ $$$$$'
+exec_test 'echo $ $ $    $ $ $ $'
 
 # dollar sign should expand
-exec_test 'echo $USER $CWD'
+exec_test 'echo $USER $ZXY $PWD'
 exec_test 'echo $UNKNWONVARIABLE $_WHATis_This999 $_1324810'
-
+exec_test "echo \$USER aaa\$USER\"bbb 'ccc' \"\"\"\"\$USER \"\$USERddd"
+exec_test "echo aaa\$USER\"\$ZXY\"\$ZXY"
 
 # variable expansion should work with ;
 # exec_test 'export A=aaa ; echo $A ; unset A'

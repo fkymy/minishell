@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 20:28:28 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/23 14:49:22 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@
 
 // Environment variable names used by the utilities in the Shell and Utilities volume of IEEE Std 1003.1-2001 consist solely of uppercase letters, digits, and the '_' (underscore) from the characters defined in Portable Character Set and do not begin with a digit. Other characters may be permitted by an implementation
 
-typedef struct	wordexp {
+typedef struct	s_wordexp
+{
 	size_t 		wordc;
 	char		**wordv;
 	size_t		offset;
@@ -54,7 +55,7 @@ static void		free_argv(char **argv)
 	free(argv);
 }
 
-int			wordexp_append_arg(struct wordexp *w, char *word)
+static int		wordexp_append_arg(t_wordexp *w, char *word)
 {
 	char	**new_argv;
 	size_t	i;
@@ -74,12 +75,42 @@ int			wordexp_append_arg(struct wordexp *w, char *word)
 	w->wordv[w->wordc] = word;
 	w->wordv[w->wordc + 1] = NULL;
 	++w->wordc;
+	w->offset = ft_strlen(word);
 	return (0);
 }
 
+void	vector_appends(t_vector_string *v, char *s)
+{
+	while (*s)
+		vector_append(v, *s++);
+}
+
+// what if its just a dollar sign?
+char	*build_envkey_shift(char **p)
+{
+	char	*envkey;
+	int		len;
+	char	*s;
+
+	len = 0;
+	s = *p;
+	while (s[len] && (ft_isalnum(s[len]) || s[len] == '_'))
+		len++;
+	if (!(envkey = malloc(sizeof(char) * (len + 2))))
+		return (NULL);
+	ft_memcpy(envkey, s, len);
+	envkey[len] = '=';
+	envkey[len + 1] = '\0';
+	*p += len;
+	return (envkey);
+}
+
+// expand shift
 char	*expand(char *str, t_vector_string *v)
 {
-	extern char **environ;
+	extern char	**environ;
+	char		*envkey;
+	int			i;
 
 	if (*str != '$')
 		return (str);
@@ -90,29 +121,13 @@ char	*expand(char *str, t_vector_string *v)
 		return (str + 1);
 	}
 	++str;
-
-	int len = 0;
-	// "の中なので\0がくることもない
-	while (ft_isalnum(str[len]) || str[len] == '_')
-		++len;
-	char *envvar = ft_substr(str, 0, len + 1); // BUG:
-	envvar[len] = '=';
-	str += len;
-
-	int i = 0;
-	while (environ[i] && ft_strncmp(environ[i], envvar, ft_strlen(envvar)))
+	envkey = build_envkey_shift(&str);
+	i = 0;
+	while (environ[i] && ft_strncmp(environ[i], envkey, ft_strlen(envkey)))
 		i++;
-
 	if (environ[i])
-	{
-		int j = ft_strlen(envvar);
-		while (environ[i][j])
-		{
-			vector_append(v, environ[i][j]);
-			j++;
-		}
-	}
-	free(envvar);
+		vector_appends(v, environ[i] + ft_strlen(envkey));
+	free(envkey);
 	return (str);
 }
 
@@ -158,7 +173,7 @@ char	*handle_quotes(t_wordexp *w, char *str, int quoted)
 		free(w->wordv[w->wordc - 1]);
 		w->wordv[w->wordc - 1] = tmp;
 		free(v.data);
-		w->offset += v.size;
+		w->offset += v.size; // v.size includes \0
 	}
 	else
 	{
@@ -169,65 +184,57 @@ char	*handle_quotes(t_wordexp *w, char *str, int quoted)
 	return (str);
 }
 
-char	*handle_expansion(t_wordexp *w, char *str, int quoted)
+int		ft_strslen(char **s)
 {
-	(void)quoted;
+	int	i;
 
-	extern char **environ;
+	if (s == NULL)
+		return (0);
+	i = 0;
+	while (s[i])
+		++i;
+	return (i);
+}
+
+
+void	wordexp_join_arg(t_wordexp *w, char *s)
+{
+	char *newarg;
+
+	newarg = ft_strjoin(w->wordv[w->wordc - 1], s);
+	free(w->wordv[w->wordc - 1]);
+	w->wordv[w->wordc - 1] = newarg;
+	w->offset = ft_strlen(newarg);
+	free(s);
+}
+
+char	*handle_expansion(t_wordexp *w, char *str)
+{
 	t_vector_string v;
+	int				i;
+	char			**fields;
 
 	vector_initialize(&v);
-
-	if (*str != '$')
+	str = expand(str, &v);
+	if (v.data == NULL)
 		return (str);
-
-	if (!ft_isalpha(str[1]) && str[1] != '_')
-	{
-		vector_append(&v, *str);
-		return (str + 1);
-	}
-	++str;
-
-	int len = 0;
-	while (str[len] && (ft_isalnum(str[len]) || str[len] == '_'))
-		++len;
-	char *envvar = malloc(sizeof(char) * (len + 2));
-	ft_memcpy(envvar, str, len);
-	envvar[len] = '=';
-	envvar[len + 1] = '\0';
-
-	str += len;
-
-	int i = 0;
-	while (environ[i] && ft_strncmp(environ[i], envvar, ft_strlen(envvar)))
-		i++;
-
-	if (environ[i])
-	{
-		printf("found environ: %s\n", environ[i]);
-		int j = ft_strlen(envvar);
-		while (environ[i][j])
-		{
-			vector_append(&v, environ[i][j]);
-			j++;
-		}
-	}
-	free(envvar);
 	vector_append(&v, '\0');
+
+	// v is $, or string
 	printf("v.data %s\n", v.data);
+	fields = ft_split(v.data, ' ');
+	free(v.data);
+
+	printf("offset: %zu\n", w->offset);
 	if (w->offset)
-	{
-		char *tmp = ft_strjoin(w->wordv[w->wordc - 1], v.data);
-		free(w->wordv[w->wordc - 1]);
-		w->wordv[w->wordc - 1] = tmp;
-		free(v.data);
-		w->offset += v.size;
-	}
+		wordexp_join_arg(w, fields[0]);
 	else
-	{
-		wordexp_append_arg(w, v.data);
-		w->offset += v.size;
-	}
+		wordexp_append_arg(w, fields[0]);
+
+	i = 1;
+	while (i < ft_strslen(fields))
+		wordexp_append_arg(w, fields[i]);
+	free(fields);
 	return (str);
 }
 
@@ -253,12 +260,11 @@ char	*handle_word(t_wordexp *w, char *str)
 	else
 	{
 		wordexp_append_arg(w, v.data);
-		w->offset += v.size;
 	}
 	return (str);
 }
 
-char	**handle_expansion_and_unquote(char **argv)
+char	**wordexp(char **argv)
 {
 	t_wordexp w;
 	w.wordc = 0;
@@ -267,9 +273,6 @@ char	**handle_expansion_and_unquote(char **argv)
 	int i = 0;
 	while (argv[i])
 	{
-		printf("handling c->argv[%d]: %s\n", i, argv[i]);
-		// echo $USER aaa$USER"bbb 'ccc' """"$USER "$USERddd
-
 		w.offset = 0;
 		int quoted = 0;
 		char *str = argv[i];
@@ -282,9 +285,9 @@ char	**handle_expansion_and_unquote(char **argv)
 				str = handle_quotes(&w, str, quoted);
 				quoted = 0;
 			}
-			else if (*str == '$')
+			else if (*str == '$' && !quoted)
 			{
-				str = handle_expansion(&w, str, quoted);
+				str = handle_expansion(&w, str);
 			}
 			else
 			{
@@ -294,11 +297,16 @@ char	**handle_expansion_and_unquote(char **argv)
 		i++;
 	}
 
-	printf("new wordv:\n");
+	/* printf("new wordv:\n"); */
+	/* for (int i = 0; i < (int)w.wordc; i++) */
+	/* { */
+	/* 	printf("w.wordv[%d]: %s\n", i, w.wordv[i]); */
+	/* } */
+
+	// temporary
 	for (int i = 0; i < (int)w.wordc; i++)
-	{
-		printf("w.wordv[%d]: %s\n", i, w.wordv[i]);
-	}
+		if (ft_strlen(w.wordv[i]) == 0)
+			die("wordv should never be zero");
 
 	free_argv(argv);
 	return (w.wordv);

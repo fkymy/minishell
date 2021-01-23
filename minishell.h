@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 19:33:48 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/23 13:25:47 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ char			*get_next_token(char *str, int *type, char **token);
 char			**handle_redir(char **argv);
 
 /* wordexp.c */
-char			**handle_expansion_and_unquote(char **argv);
+char			**wordexp(char **argv);
 
 /* main.c */
 void			die(char *msg);

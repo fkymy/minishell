@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 19:31:51 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/23 13:25:57 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		}
 
 		argv = handle_redir(argv);
-		argv = handle_expansion_and_unquote(argv);
+		argv = wordexp(argv);
 
 		if (execve(is_cmd_exist(g_path, argv[0]), argv, environ) < 0)
 		{
