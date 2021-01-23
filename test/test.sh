@@ -228,6 +228,15 @@ exec_test "echo \"  \$UNKNOWNVARIABLE  \$_WHATIS_this999 \$_32175891  \$________
 # exec_test "echo hello \' >  > \' > '>' > \" > >\" world ; cat \" > >\" ; rm \" > >\""
 # echo hello ' >  > ' > '>' > " > >" world ; cat " > >" ; rm " > >"
 
+# $?
+# $? should print exit status
+exec_test 'true ; echo $? ; false ; echo $? ; cat nonexist ; echo $?'
+exec_test 'true ;echo $?$?$?'
+exec_test "false ; echo \$USER\$?\"\$?\"'\$?' $  \$?"
+exec_test "/bin/ls | cat | wc ; echo \$?"
+
+# $? should work in pipe
+exec_test_with_files "false ; echo \$? > test1.txt > test2.txt ; echo \$? | cat >>test2.txt ; cat test2.txt | echo \$?"
 
 # Expansion
 # dollar sign should print

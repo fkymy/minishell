@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:30:31 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/19 18:35:41 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/23 16:49:28 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,12 @@ void	vector_append(t_vector_string *v, int c)
 	}
 	v->data[v->size] = c;
 	++v->size;
+}
+
+void	vector_appends(t_vector_string *v, char *s)
+{
+	while (*s)
+		vector_append(v, *s++);
 }
 
 void	vector_free(t_vector_string *v)

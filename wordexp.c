@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/23 14:49:22 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/23 16:51:25 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,17 @@ static void		free_argv(char **argv)
 	free(argv);
 }
 
+static void		wordexp_join_arg(t_wordexp *w, char *s)
+{
+	char *new_arg;
+
+	new_arg = ft_strjoin(w->wordv[w->wordc - 1], s);
+	free(w->wordv[w->wordc - 1]);
+	w->wordv[w->wordc - 1] = new_arg;
+	w->offset = ft_strlen(new_arg);
+	free(s);
+}
+
 static int		wordexp_append_arg(t_wordexp *w, char *word)
 {
 	char	**new_argv;
@@ -79,13 +90,6 @@ static int		wordexp_append_arg(t_wordexp *w, char *word)
 	return (0);
 }
 
-void	vector_appends(t_vector_string *v, char *s)
-{
-	while (*s)
-		vector_append(v, *s++);
-}
-
-// what if its just a dollar sign?
 char	*build_envkey_shift(char **p)
 {
 	char	*envkey;
@@ -105,7 +109,6 @@ char	*build_envkey_shift(char **p)
 	return (envkey);
 }
 
-// expand shift
 char	*expand(char *str, t_vector_string *v)
 {
 	extern char	**environ;
@@ -114,7 +117,11 @@ char	*expand(char *str, t_vector_string *v)
 
 	if (*str != '$')
 		return (str);
-
+	if (str[1] == '?')
+	{
+		vector_appends(v, ft_itoa(g_exit_status));
+		return (str + 2);
+	}
 	if (!ft_isalpha(str[1]) && str[1] != '_')
 	{
 		vector_append(v, *str);
@@ -131,55 +138,66 @@ char	*expand(char *str, t_vector_string *v)
 	return (str);
 }
 
-char	*handle_quotes(t_wordexp *w, char *str, int quoted)
+char	*unquote_single(char *str, t_vector_string *v)
+{
+	if (*str != '\'')
+		return (str);
+	++str;
+	while (*str != '\'')
+	{
+		vector_append(v, *str);
+		++str;
+	}
+	return (str);
+}
+
+int		is_double_quote_escapable(int c)
+{
+	return (c == '$' || c == '\\' || c == '\"');
+}
+
+char	*unquote_double(char *str, t_vector_string *v)
+{
+	int escaped;
+
+	if (*str != '\"')
+		return (str);
+	++str;
+	escaped = 0;
+	while (*str != '\"')
+	{
+		if (*str == '\\' && is_double_quote_escapable(str[1]))
+		{
+			escaped = 1;
+			++str;
+		}
+		if (*str == '$' && !escaped)
+		{
+			str = expand(str, v);
+		}
+		else
+		{
+			vector_append(v, *str);
+			++str;
+		}
+	}
+	return (str);
+}
+
+char	*handle_quotes(t_wordexp *w, char *str)
 {
 	t_vector_string v;
 
 	vector_initialize(&v);
-
-	if (quoted == '\'')
-	{
-		while (*str != quoted)
-		{
-			vector_append(&v, *str);
-			++str;
-		}
-	}
-	else if (quoted == '\"')
-	{
-		int escaped = 0;
-		while (*str != quoted)
-		{
-			if (*str == '\\' && (str[1] == '$' || str[1] == '\\' || str[1] == '\"'))
-			{
-				escaped = 1;
-				++str;
-			}
-			if (*str == '$' && !escaped)
-			{
-				str = expand(str, &v);
-			}
-			else
-			{
-				vector_append(&v, *str);
-				++str;
-			}
-		}
-	}
+	if (*str == '\'')
+		str = unquote_single(str, &v);
+	else if (*str == '\"')
+		str = unquote_double(str, &v);
 	vector_append(&v, '\0');
 	if (w->offset)
-	{
-		char *tmp = ft_strjoin(w->wordv[w->wordc - 1], v.data);
-		free(w->wordv[w->wordc - 1]);
-		w->wordv[w->wordc - 1] = tmp;
-		free(v.data);
-		w->offset += v.size; // v.size includes \0
-	}
+		wordexp_join_arg(w, v.data);
 	else
-	{
 		wordexp_append_arg(w, v.data);
-		w->offset += v.size;
-	}
 	++str;
 	return (str);
 }
@@ -196,18 +214,6 @@ int		ft_strslen(char **s)
 	return (i);
 }
 
-
-void	wordexp_join_arg(t_wordexp *w, char *s)
-{
-	char *newarg;
-
-	newarg = ft_strjoin(w->wordv[w->wordc - 1], s);
-	free(w->wordv[w->wordc - 1]);
-	w->wordv[w->wordc - 1] = newarg;
-	w->offset = ft_strlen(newarg);
-	free(s);
-}
-
 char	*handle_expansion(t_wordexp *w, char *str)
 {
 	t_vector_string v;
@@ -219,18 +225,12 @@ char	*handle_expansion(t_wordexp *w, char *str)
 	if (v.data == NULL)
 		return (str);
 	vector_append(&v, '\0');
-
-	// v is $, or string
-	printf("v.data %s\n", v.data);
 	fields = ft_split(v.data, ' ');
 	free(v.data);
-
-	printf("offset: %zu\n", w->offset);
 	if (w->offset)
 		wordexp_join_arg(w, fields[0]);
 	else
 		wordexp_append_arg(w, fields[0]);
-
 	i = 1;
 	while (i < ft_strslen(fields))
 		wordexp_append_arg(w, fields[i]);
@@ -250,60 +250,38 @@ char	*handle_word(t_wordexp *w, char *str)
 	}
 	vector_append(&v, '\0');
 	if (w->offset)
-	{
-		char *tmp = ft_strjoin(w->wordv[w->wordc - 1], v.data);
-		free(w->wordv[w->wordc - 1]);
-		w->wordv[w->wordc - 1] = tmp;
-		free(v.data);
-		w->offset += v.size;
-	}
+		wordexp_join_arg(w, v.data);
 	else
-	{
 		wordexp_append_arg(w, v.data);
-	}
 	return (str);
 }
 
 char	**wordexp(char **argv)
 {
-	t_wordexp w;
+	t_wordexp	w;
+	char		*str;
+	int			i;
+
 	w.wordc = 0;
 	w.wordv = NULL;
-
-	int i = 0;
+	i = 0;
 	while (argv[i])
 	{
 		w.offset = 0;
-		int quoted = 0;
-		char *str = argv[i];
+		str = argv[i];
 		while (*str)
 		{
-			if ((*str == '\'' || *str == '\"') && !quoted)
-			{
-				quoted = *str;
-				++str;
-				str = handle_quotes(&w, str, quoted);
-				quoted = 0;
-			}
-			else if (*str == '$' && !quoted)
-			{
+			if ((*str == '\'' || *str == '\"'))
+				str = handle_quotes(&w, str);
+			else if (*str == '$')
 				str = handle_expansion(&w, str);
-			}
 			else
-			{
 				str = handle_word(&w, str);
-			}
 		}
 		i++;
 	}
 
-	/* printf("new wordv:\n"); */
-	/* for (int i = 0; i < (int)w.wordc; i++) */
-	/* { */
-	/* 	printf("w.wordv[%d]: %s\n", i, w.wordv[i]); */
-	/* } */
-
-	// temporary
+	// Temporary
 	for (int i = 0; i < (int)w.wordc; i++)
 		if (ft_strlen(w.wordv[i]) == 0)
 			die("wordv should never be zero");

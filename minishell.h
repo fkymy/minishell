@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/23 13:25:47 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/23 16:49:40 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ typedef struct	s_vector_string
 
 void			vector_initialize(t_vector_string *v);
 void			vector_append(t_vector_string *v, int c);
+void			vector_appends(t_vector_string *v, char *s);
 void			vector_free(t_vector_string *v);
 
 /* token.c */
@@ -61,6 +62,7 @@ char			**handle_redir(char **argv);
 char			**wordexp(char **argv);
 
 /* main.c */
+extern int		g_exit_status;
 void			die(char *msg);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/23 13:25:57 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/23 16:20:33 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ typedef struct stat	t_stat;
 ** Globals
 */
 
+int		g_exit_status = 0;
 char	**g_path;
 
 /*
@@ -79,7 +80,7 @@ char	**set_builtins_name(void)
 {
 	char	**builtins;
 
-	builtins = ft_split("time sleep wc ls echo cat cd pwd export unset env exit", ' ');
+	builtins = ft_split("true false time sleep wc ls echo cat cd pwd export unset env exit", ' ');
 	if (!builtins)
 	{
 		ft_putstr_fd(strerror(errno), 2);
@@ -222,6 +223,10 @@ void	run_list(t_command *c)
 		c = do_pipeline(c);
 		exited_pid = waitpid(c->pid, &status, 0);
 		assert(exited_pid == c->pid);
+		if (WIFEXITED(status))
+			g_exit_status = WEXITSTATUS(status);
+		else
+			die("child exited abnormally");
 		while (wait(NULL) > 0);
 		c = c->next;
 	}
