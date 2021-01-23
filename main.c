@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/23 07:58:27 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/23 15:57:01 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -300,17 +300,13 @@ int			main(int argc, char *argv[], char *envp[])
 		if ((ret = get_next_line(0, &tmp)) < 0)
 			die("gnl failed.");
 
-		commandline = ft_strjoin(commandline, tmp);
-		if (ret == 0 && tmp[0] == '\0')
+		if (ret == 0 && tmp[0] == '\0' && last_ret == 1)
 		{
-			if (last_ret == 1 && commandline[0] == '\0')
-			{
-				ft_putstr_fd("\033[0K", 2);
-				ft_putstr_fd("exit\n", 2);
-				break ;
-			}
+			ft_putstr_fd("\033[0K", 2);
+			ft_putstr_fd("exit\n", 2);
+			break ;
 		}
-		free(tmp);
+		commandline = ft_strjoin_free(commandline, tmp);
 		if (ret == 1)
 		{
 			if (parse(commandline, &c) < 0)
