@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/27 20:21:32 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/12 17:23:20 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/23 14:26:19 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,5 +82,6 @@ t_list			*ft_lstmap(t_list *lst, void *(*f)(void *),
 
 int				get_next_line(int fd, char **line);
 void			ft_free_null(char **ptr);
+char			*ft_strjoin_free(char *s1, char *s2);
 
 #endif
