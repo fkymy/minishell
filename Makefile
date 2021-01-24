@@ -1,4 +1,4 @@
-# Makefile for minishell, updated Fri Jan 22 11:45:17 JST 2021
+# Makefile for minishell, updated Sun Jan 24 11:03:34 JST 2021
 
 SRC := command.c main.c parse.c redir.c token.c vector_string.c wordexp.c
 

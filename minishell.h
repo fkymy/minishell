@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/23 16:49:40 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 11:17:41 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,14 @@ void			vector_free(t_vector_string *v);
 int				token_isop(int t);
 int				token_ispipe(int t);
 char			*get_next_token(char *str, int *type, char **token);
+
+/* parse.c */
+# define OP_PIPE 2
+# define OP_AND 3
+# define OP_OR 4
+# define OP_SEPARATOR 5
+# define OP_OTHER -1
+int				parse(char *commandline, t_command **c);
 
 /* redir.c */
 char			**handle_redir(char **argv);

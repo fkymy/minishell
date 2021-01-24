@@ -109,6 +109,23 @@ function exec_test()
 # Mandatory Part
 echo > results.txt ;
 
+# Syntax error
+# exec_test ';'
+# exec_test '|'
+# exec_test '<'
+# exec_test '; ; '
+# exec_test '| |'
+# exec_test '< >'
+# exec_test ';; echo'
+# exec_test '| echo'
+# exec_test 'echo > <'
+# exec_test 'echo | |'
+# exec_test 'echo hello > |'
+# exec_test 'echo hello > ;'
+# exec_test 'echo hello >> |'
+# exec_test 'echo hello >> ;'
+# exec_test 'cat < |'
+# exec_test 'cat < ;'
 
 # ; Separator
 exec_test 'echo hello'
@@ -127,12 +144,32 @@ exec_test 'ls | wc | wc ; echo test | wc'
 
 # > < >> Redirection
 
+# redirection op without file should be syntax error
+# exec_test 'echo hello > '
+# exec_test 'echo hello >'
+# exec_test 'echo hello >>'
+# exec_test 'cat <'
+# exec_test 'cat < '
+
+# exec_test_with_files 'echo hello > > test1.txt'
+# exec_test_with_files 'echo hello >> >> test1.txt'
+# exec_test_with_files 'echo hello > >> test1.txt'
+# exec_test_with_files 'echo hello > < test1.txt'
+# exec_test_with_files 'cat < < test1.txt'
+
+# redirection should work without command
+# exec_test '> echo ; file echo ; rm echo'
+# exec_test '>> echo ; file echo ; rm echo'
+# exec_test '< echo'
+# exec_test_with_files '<test1.txt'
+# exec_test_with_files '<test1.txt<test2.txt<test3.txt<test4.txt'
+
 # < redirection shoud fail if file does not exist
 exec_test 'cat < nonexistingfile'
 exec_test 'echo hello > test.txt ; cat < nonexistingfile < test.txt'
 rm test.txt
 
-# < redirection should
+# < redirection should work with multiple files
 exec_test_with_files 'wc < test1.txt < test2.txt < test3.txt < test4.txt < test5.txt ; cat test[1-6].txt'
 
 # > redirection should redirect output to file
@@ -190,12 +227,14 @@ exec_test "echo hello ';' cat ; echo hello \";\" cat"
 exec_test "echo hello '|' cat ; echo hello \"|\" cat"
 exec_test " echo hello '>' '>' ; echo hello \">\" \">\""
 exec_test " echo hello '>>' '>>' ; echo hello \">>\" \">>\""
+exec_test "echo > \">\" hello ; cat \">\" ; rm \">\""
+exec_test "echo hello \' >  > \' > '>' > \" > >\" world ; cat \" > >\" ; rm \" > >\""
 
 # quotes do not split fields
 exec_test "\"echo hello\""
-exec_test "\'echo hello\'"
+exec_test "'echo hello'"
 exec_test "\"  echo hello there my friend | cat    \""
-exec_test "\'  echo hello there my friend | cat    \'"
+exec_test "'  echo hello there my friend | cat    '"
 
 # Single quotes
 
@@ -224,18 +263,23 @@ exec_test "echo \"   aaa\$USER bbb\$CWDccc \""
 # double quotes should add empty to unknown variable
 exec_test "echo \"  \$UNKNOWNVARIABLE  \$_WHATIS_this999 \$_32175891  \$________\""
 
-# exec_test "echo > \">\" hello ; cat \">\" ; rm \">\""
-# exec_test "echo hello \' >  > \' > '>' > \" > >\" world ; cat \" > >\" ; rm \" > >\""
-# echo hello ' >  > ' > '>' > " > >" world ; cat " > >" ; rm " > >"
 
 # $?
+
 # $? should print exit status
 exec_test 'true ; echo $? ; false ; echo $? ; cat nonexist ; echo $?'
 exec_test 'true ;echo $?$?$?'
 exec_test "false ; echo \$USER\$?\"\$?\"'\$?' $  \$?"
 exec_test "/bin/ls | cat | wc ; echo \$?"
 
-# $? should work in pipe
+# $? should work in sequence
+exec_test 'echo $? $? $? $? $?'
+exec_test 'true ; echo $? ; false ; echo $? ; true | echo $? ; false | echo $?'
+
+# $? should be undefined in pipe
+exec_test 'true ; echo $? | cat | false | echo $?'
+
+# $? should work in pipes and redirections
 exec_test_with_files "false ; echo \$? > test1.txt > test2.txt ; echo \$? | cat >>test2.txt ; cat test2.txt | echo \$?"
 
 # Expansion
@@ -251,26 +295,17 @@ exec_test "echo aaa\$USER\"\$ZXY\"\$ZXY"
 
 # variable expansion should work with ;
 # exec_test 'export A=aaa ; echo $A ; unset A'
-# exec_test 'A=aaa ; echo $A'
 
 # variable expansion order is undefined in pipe
-# exec_test 'B=bbb | echo $B | cat'
-# exec_test 'echo $B | B=bbb | cat'
-
-# exec_test 'export B=bbb ; echo $B | cat'
+# exec_test 'export B=bbb | echo $B | cat'
+# exec_test 'echo $B | export B=bbb | cat'
 
 # variable expansion is before redirection
-# exec_test 'C=ccc ; echo $C > $C ; cat $C'
+# exec_test 'export C=ccc ; echo $C > $C ; cat $C'
 
 # variable expansion is before word
-# exec_test "ECHO=echo ; CAT=cat ; $ECHO $CAT | $CAT"
+# exec_test 'export ECHO=echo ; export CAT=cat ; \$ECHO \$CAT | \$CAT'
 
-# parameter expansion should work in sequence
-# exec_test 'echo $? $? $? $? $?'
-# exec_test 'true ; echo $? ; false ; echo $? ; true | echo $? ; false | echo $?'
-
-# parameter expansion should be undefined in pipe
-# exec_test 'true ; echo $? | cat | false | echo $?'
 
 # variable expansion as special characters
 
