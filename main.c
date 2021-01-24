@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 17:15:40 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 10:52:36 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ char	**set_builtins_name(void)
 {
 	char	**builtins;
 
-	builtins = ft_split("time sleep wc ls echo cat cd pwd export unset env exit", ' ');
+	builtins = ft_split("echo cd pwd export unset env exit", ' ');
 	if (!builtins)
 	{
 		ft_putstr_fd(strerror(errno), 2);
@@ -189,6 +189,22 @@ t_command	*do_pipeline(t_command *c)
 	return (c);
 }
 
+void	free_split(char **ptr)
+{
+	int	i;
+
+	if (!ptr)
+		return ;
+	i = 0;
+	while (ptr[i])
+	{
+		ft_free_null(&ptr[i]);
+		i++;
+	}
+	free(ptr);
+	return ;
+}
+
 void	run_list(t_command *c)
 {
 	pid_t	exited_pid;
@@ -204,11 +220,13 @@ void	run_list(t_command *c)
 		}
 
 		char **builtins = set_builtins_name();
-		if (is_cmd_builtins(c->argv[0], builtins))
+		if (!is_cmd_exist(g_path, c->argv[0])
+				&& is_cmd_builtins(c->argv[0], builtins))
 		{
 			c = c->next;
 			continue ;
 		}
+		free_split(builtins);
 		if (ft_strcmp(c->argv[0], "exit") == 0)
 			exit(0);
 		if (ft_strcmp(c->argv[0], "cd") == 0)
