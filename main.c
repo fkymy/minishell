@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 10:52:36 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/24 20:28:15 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,28 +64,39 @@ char	**set_path_name(void)
 	return (path);
 }
 
-int		is_cmd_builtins(char *cmd, char **builtins)
+void	free_split(char **ptr)
 {
-	int i;
+	int	i;
 
+	if (!ptr)
+		return ;
 	i = 0;
-	while (builtins[i])
-		if (ft_strcmp(cmd, builtins[i++]) == 0)
-			return (0);
-	return (42);
+	while (ptr[i])
+	{
+		ft_free_null(&ptr[i]);
+		i++;
+	}
+	free(ptr);
+	return ;
 }
 
-char	**set_builtins_name(void)
+int		is_cmd_builtins(char *cmd)
 {
-	char	**builtins;
+	int i;
+	char **builtins;
 
 	builtins = ft_split("echo cd pwd export unset env exit", ' ');
 	if (!builtins)
-	{
-		ft_putstr_fd(strerror(errno), 2);
-		exit(1);
-	}
-	return (builtins);
+		die(strerror(errno));
+	i = 0;
+	while (builtins[i])
+		if (ft_strcmp(cmd, builtins[i++]) == 0)
+		{
+			free_split(builtins);
+			return (0);
+		}
+	free_split(builtins);
+	return (42);
 }
 
 char	*is_cmd_exist(char **paths, char *cmd)
@@ -189,22 +200,6 @@ t_command	*do_pipeline(t_command *c)
 	return (c);
 }
 
-void	free_split(char **ptr)
-{
-	int	i;
-
-	if (!ptr)
-		return ;
-	i = 0;
-	while (ptr[i])
-	{
-		ft_free_null(&ptr[i]);
-		i++;
-	}
-	free(ptr);
-	return ;
-}
-
 void	run_list(t_command *c)
 {
 	pid_t	exited_pid;
@@ -219,14 +214,12 @@ void	run_list(t_command *c)
 			continue ;
 		}
 
-		char **builtins = set_builtins_name();
 		if (!is_cmd_exist(g_path, c->argv[0])
-				&& is_cmd_builtins(c->argv[0], builtins))
+				&& is_cmd_builtins(c->argv[0]))
 		{
 			c = c->next;
 			continue ;
 		}
-		free_split(builtins);
 		if (ft_strcmp(c->argv[0], "exit") == 0)
 			exit(0);
 		if (ft_strcmp(c->argv[0], "cd") == 0)
