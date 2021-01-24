@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 19:23:38 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 20:09:45 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,16 +36,9 @@
 
 // Environment variable names used by the utilities in the Shell and Utilities volume of IEEE Std 1003.1-2001 consist solely of uppercase letters, digits, and the '_' (underscore) from the characters defined in Portable Character Set and do not begin with a digit. Other characters may be permitted by an implementation
 
-typedef struct	s_wordexp
-{
-	size_t 		wordc;
-	char		**wordv;
-	size_t		offset;
-}				t_wordexp;
-
 static void		wordexp_join_arg(t_wordexp *w, char *s)
 {
-	char *new_arg;
+	char	*new_arg;
 
 	new_arg = ft_strjoin(w->wordv[w->wordc - 1], s);
 	free(w->wordv[w->wordc - 1]);
@@ -174,36 +167,36 @@ char	*unquote_double(char *str, t_vector_string *v)
 	return (str);
 }
 
-char	*handle_quotes(t_wordexp *w, char *str)
+char	*handle_quotes(char *word, t_wordexp *w)
 {
-	t_vector_string v;
+	t_vector_string	v;
 
 	vector_initialize(&v);
-	if (*str == '\'')
-		str = unquote_single(str, &v);
-	else if (*str == '\"')
-		str = unquote_double(str, &v);
+	if (*word == '\'')
+		word = unquote_single(word, &v);
+	else if (*word == '\"')
+		word = unquote_double(word, &v);
 	vector_append(&v, '\0');
 	if (w->offset)
 		wordexp_join_arg(w, v.data);
 	else
 		wordexp_append_arg(w, v.data);
-	++str;
-	return (str);
+	++word;
+	return (word);
 }
 
-char	*handle_expansion(t_wordexp *w, char *str)
+char	*handle_expansion(char *word, t_wordexp *w)
 {
-	t_vector_string v;
+	t_vector_string	v;
 	size_t			i;
 	char			**fields;
 
 	vector_initialize(&v);
-	if (str[1] == '\"')
-		return (handle_quotes(w, str + 1));
-	str = expand(str, &v);
+	if (word[1] == '\"')
+		return (handle_quotes(word + 1, w));
+	word = expand(word, &v);
 	if (v.data == NULL)
-		return (str);
+		return (word);
 	vector_append(&v, '\0');
 	fields = ft_split(v.data, ' ');
 	free(v.data);
@@ -215,57 +208,53 @@ char	*handle_expansion(t_wordexp *w, char *str)
 	while (i < ft_strslen(fields))
 		wordexp_append_arg(w, fields[i]);
 	free(fields);
-	return (str);
+	return (word);
 }
 
-char	*handle_word(t_wordexp *w, char *str)
+char	*handle_word(char *word, t_wordexp *w)
 {
 	t_vector_string v;
 
 	vector_initialize(&v);
-	while (*str && *str != '\'' && *str != '\"' && *str != '$')
+	while (*word && *word != '\'' && *word != '\"' && *word != '$')
 	{
-		vector_append(&v, *str);
-		++str;
+		vector_append(&v, *word);
+		++word;
 	}
 	vector_append(&v, '\0');
 	if (w->offset)
 		wordexp_join_arg(w, v.data);
 	else
 		wordexp_append_arg(w, v.data);
-	return (str);
+	return (word);
 }
 
-char	**wordexp(char **argv)
+int		wordexp(char *word, t_wordexp *w)
 {
-	t_wordexp	w;
-	char		*str;
-	int			i;
+	if (!word)
+		return (-1);
+	while (*word)
+	{
+		if ((*word == '\'' || *word == '\"'))
+			word = handle_quotes(word, w);
+		else if (*word == '$')
+			word = handle_expansion(word, w);
+		else
+			word = handle_word(word, w);
+	}
+	return (0);
+}
+
+char	**wordexp_wrap(char *word)
+{
+	t_wordexp w;
 
 	w.wordc = 0;
 	w.wordv = NULL;
-	i = 0;
-	while (argv[i])
-	{
-		w.offset = 0;
-		str = argv[i];
-		while (*str)
-		{
-			if ((*str == '\'' || *str == '\"'))
-				str = handle_quotes(&w, str);
-			else if (*str == '$')
-				str = handle_expansion(&w, str);
-			else
-				str = handle_word(&w, str);
-		}
-		i++;
-	}
+	w.offset = 0;
 
-	// Temporary
-	for (int i = 0; i < (int)w.wordc; i++)
-		if (ft_strlen(w.wordv[i]) == 0)
-			die("wordv should never be zero");
-
-	command_clear_args(argv);
+	if (wordexp(word, &w) < 0)
+		die("wordexp failed");
 	return (w.wordv);
 }
+

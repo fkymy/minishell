@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 19:35:29 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 20:10:41 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,6 +118,27 @@ char	*is_cmd_exist(char **paths, char *cmd)
 ** Execute
 */
 
+char	**process_words(char *argv[])
+{
+	t_wordexp	w;
+	size_t		i;
+
+	w.wordc = 0;
+	w.wordv = NULL;
+
+	i = 0;
+	argv = handle_redir(argv);
+	while (argv[i])
+	{
+		w.offset = 0;
+		if (wordexp(argv[i], &w) < 0)
+			die("wordexp failed");
+		i++;
+	}
+	command_clear_args(argv);
+	return (w.wordv);
+}
+
 pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 {
 	extern char	**environ;
@@ -146,9 +167,7 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 			close(newpipe[1]);
 		}
 
-		argv = handle_redir(argv);
-		argv = wordexp(argv);
-
+		argv = process_words(argv);
 		if (execve(is_cmd_exist(g_path, argv[0]), argv, environ) < 0)
 		{
 			perror("failed to execve");

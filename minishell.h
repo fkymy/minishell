@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 19:23:50 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 20:06:46 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,15 @@ int				isredir(char *str);
 char			**handle_redir(char **argv);
 
 /* wordexp.c */
-char			**wordexp(char **argv);
+typedef struct	s_wordexp
+{
+	size_t 		wordc;
+	char		**wordv;
+	size_t		offset;
+}				t_wordexp;
+
+int				wordexp(char *word, t_wordexp *w);
+char			**wordexp_wrap(char *word);
 
 /* main.c */
 extern int		g_exit_status;
