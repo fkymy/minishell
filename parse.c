@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/21 17:47:51 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 16:17:34 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 18:46:43 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "libft/libft.h"
 #include "minishell.h"
 
-static int	isredir(char *str)
+int			isredir(char *str)
 {
 	if (!str)
 		return (0);

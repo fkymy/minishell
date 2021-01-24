@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 11:17:41 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 19:23:50 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ typedef struct	s_command
 
 t_command		*command_new(void);
 int				command_append_arg(t_command *c, char *word);
-void			command_clear(t_command *c);
+void			command_clear_args(char **argv);
 void			command_lstclear(t_command **c);
 
 /* vector_string.c */
@@ -62,6 +62,7 @@ char			*get_next_token(char *str, int *type, char **token);
 # define OP_SEPARATOR 5
 # define OP_OTHER -1
 int				parse(char *commandline, t_command **c);
+int				isredir(char *str);
 
 /* redir.c */
 char			**handle_redir(char **argv);

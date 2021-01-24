@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 19:37:34 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 13:41:50 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 18:22:12 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,19 +54,6 @@ void		command_lstclear(t_command **c)
 		free(*c);
 		*c = tmp;
 	}
-}
-
-void		command_clear(t_command *c)
-{
-	int	i;
-
-	if (c == NULL)
-		return ;
-	i = 0;
-	while (i < c->argc)
-		free(c->argv[i++]);
-	free(c->argv);
-	free(c);
 }
 
 int			command_append_arg(t_command *c, char *word)

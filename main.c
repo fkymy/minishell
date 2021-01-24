@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 16:15:37 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 19:35:29 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ char	**set_builtins_name(void)
 {
 	char	**builtins;
 
-	builtins = ft_split("rm true false time sleep wc ls echo cat cd pwd export unset env exit", ' ');
+	builtins = ft_split("file rm true false time sleep wc ls echo cat cd pwd export unset env exit", ' ');
 	if (!builtins)
 	{
 		ft_putstr_fd(strerror(errno), 2);

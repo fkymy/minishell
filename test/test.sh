@@ -188,7 +188,7 @@ exec_test 'rm test1.txt ; echo aaa >> test1.txt ; echo bbb >> test1.txt ; cat te
 # >> redirection should work with multiple files
 exec_test_with_files 'echo aaa >> test1.txt >> test2.txt >> test3.txt ; echo bbb >> test1.txt >> test2.txt >> test3.txt ; cat test[1-3].txt'
 
-# redirections whould work in mix
+# redirections should work in mix
 exec_test_with_files 'wc < test1.txt < test2.txt > test3.txt > test4.txt < test5.txt > test6.txt'
 
 exec_test_with_files 'cat > test2.txt > test3.txt > test4.txt < test1.txt'
@@ -200,6 +200,15 @@ exec_test_with_files 'echo test666666 >> test6.txt | head -n 1 < test6.txt > tes
 # redirections and pipes
 exec_test_with_files 'cat test1.txt | cat < test2.txt'
 exec_test_with_files 'cat < test1.txt | cat > test2.txt ; cat test2.txt'
+
+# redirections with quotes
+exec_test "echo hello > 'world' ; cat world ; rm world"
+exec_test "echo hello > aaa\"world\" > \" a b c \"; file aaaworld ; cat \" a b c \" ; rm aaaworld \" a b c \""
+
+# redirections with variables
+exec_test "echo hello > \$USER ; cat \$USER ; rm \$USER"
+exec_test "echo hello > aaa\$USER\"\$PWD\" ; cat aaa\$USER\"\$PWD\" ; rm aaa\$USER\"\$PWD\""
+
 
 # Quotes
 
@@ -228,7 +237,7 @@ exec_test "echo hello '|' cat ; echo hello \"|\" cat"
 exec_test " echo hello '>' '>' ; echo hello \">\" \">\""
 exec_test " echo hello '>>' '>>' ; echo hello \">>\" \">>\""
 exec_test "echo > \">\" hello ; cat \">\" ; rm \">\""
-exec_test "echo hello \' >  > \' > '>' > \" > >\" world ; cat \" > >\" ; rm \" > >\""
+exec_test "echo hello ' >  > ' > '>' > \" > >\" world ; cat \" > >\" ; rm \" > >\""
 
 # quotes do not split fields
 exec_test "\"echo hello\""
@@ -283,6 +292,12 @@ exec_test 'true ; echo $? | cat | false | echo $?'
 exec_test_with_files "false ; echo \$? > test1.txt > test2.txt ; echo \$? | cat >>test2.txt ; cat test2.txt | echo \$?"
 
 # Expansion
+
+# dollar sign preceding double quote
+exec_test "echo \$\"\""
+exec_test "echo \$\"hello\""
+exec_test "echo \$\"USER\$USER what...\""
+
 # dollar sign should print
 exec_test 'echo $'
 exec_test 'echo $ $ $    $ $ $ $'
@@ -334,6 +349,17 @@ exec_test "echo aaa\$USER\"\$ZXY\"\$ZXY"
 
 # WOW='hello world' ; cat aaa$WOW ; cat "aaa$WOW" ; cat 'aaa$WOW'
 
+
+# Tilda Expansion (optional?)
+
+#exec_test 'echo ~'
+#exec_test 'echo ~~'
+#exec_test 'echo ~ ~'
+#exec_test 'echo ~/tildaaaa'
+#exec_test 'echo ~//'
+#exec_test 'echo ~/ /'
+#exec_test 'ls ~'
+#exec_test 'ls ~'
 
 # Builtins
 # exec_test 'pwd ; cd .. | pwd'

@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/23 16:51:25 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 19:23:38 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,18 +42,6 @@ typedef struct	s_wordexp
 	char		**wordv;
 	size_t		offset;
 }				t_wordexp;
-
-static void		free_argv(char **argv)
-{
-	int	i;
-
-	if (argv == NULL)
-		return ;
-	i = 0;
-	while (argv[i])
-		free(argv[i++]);
-	free(argv);
-}
 
 static void		wordexp_join_arg(t_wordexp *w, char *s)
 {
@@ -130,7 +118,8 @@ char	*expand(char *str, t_vector_string *v)
 	++str;
 	envkey = build_envkey_shift(&str);
 	i = 0;
-	while (environ[i] && ft_strncmp(environ[i], envkey, ft_strlen(envkey)))
+	while (environ[i]
+			&& ft_strncmp(environ[i], envkey, ft_strlen(envkey)))
 		i++;
 	if (environ[i])
 		vector_appends(v, environ[i] + ft_strlen(envkey));
@@ -166,7 +155,8 @@ char	*unquote_double(char *str, t_vector_string *v)
 	escaped = 0;
 	while (*str != '\"')
 	{
-		if (*str == '\\' && is_double_quote_escapable(str[1]))
+		if (*str == '\\'
+				&& is_double_quote_escapable(str[1]))
 		{
 			escaped = 1;
 			++str;
@@ -202,25 +192,15 @@ char	*handle_quotes(t_wordexp *w, char *str)
 	return (str);
 }
 
-int		ft_strslen(char **s)
-{
-	int	i;
-
-	if (s == NULL)
-		return (0);
-	i = 0;
-	while (s[i])
-		++i;
-	return (i);
-}
-
 char	*handle_expansion(t_wordexp *w, char *str)
 {
 	t_vector_string v;
-	int				i;
+	size_t			i;
 	char			**fields;
 
 	vector_initialize(&v);
+	if (str[1] == '\"')
+		return (handle_quotes(w, str + 1));
 	str = expand(str, &v);
 	if (v.data == NULL)
 		return (str);
@@ -286,6 +266,6 @@ char	**wordexp(char **argv)
 		if (ft_strlen(w.wordv[i]) == 0)
 			die("wordv should never be zero");
 
-	free_argv(argv);
+	command_clear_args(argv);
 	return (w.wordv);
 }
