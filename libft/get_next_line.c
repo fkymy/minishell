@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/06 18:23:41 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/01/23 14:26:53 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/26 05:11:38 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,8 @@ static int	read_file(char *text[], const int fd)
 
 static int	set_line(char *text[], const int fd, char **line, char *ptr)
 {
+	char	*tmp;
+
 	if (ft_strlen(text[fd]))
 	{
 		if (!ft_strchr(text[fd], '\n'))
@@ -49,8 +51,9 @@ static int	set_line(char *text[], const int fd, char **line, char *ptr)
 		}
 		*ptr = '\0';
 		*line = ft_strdup(text[fd]);
+		tmp = ft_strdup(ptr + 1);
 		ft_free_null(&(text[fd]));
-		text[fd] = ft_strdup(ptr + 1);
+		text[fd] = tmp;
 	}
 	else
 	{
