@@ -35,12 +35,12 @@ typedef struct	s_vector_string
 	size_t	size;
 	size_t	capacity;
 	int		error;
-}				t_vector_string;
+}				t_vector;
 
-void			vector_initialize(t_vector_string *v);
-void			vector_append(t_vector_string *v, int c);
-void			vector_appends(t_vector_string *v, char *s);
-void			vector_free(t_vector_string *v);
+void			vector_initialize(t_vector *v);
+void			vector_append(t_vector *v, int c);
+void			vector_appends(t_vector *v, char *s);
+void			vector_free(t_vector *v);
 
 /* token.c */
 # define TOKEN_WORD 0

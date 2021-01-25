@@ -90,7 +90,7 @@ char	*build_envkey_shift(char **p)
 	return (envkey);
 }
 
-char	*expand(char *str, t_vector_string *v)
+char	*expand(char *str, t_vector *v)
 {
 	extern char	**environ;
 	char		*envkey;
@@ -120,7 +120,7 @@ char	*expand(char *str, t_vector_string *v)
 	return (str);
 }
 
-char	*unquote_single(char *str, t_vector_string *v)
+char	*unquote_single(char *str, t_vector *v)
 {
 	if (*str != '\'')
 		return (str);
@@ -138,7 +138,7 @@ int		is_double_quote_escapable(int c)
 	return (c == '$' || c == '\\' || c == '\"');
 }
 
-char	*unquote_double(char *str, t_vector_string *v)
+char	*unquote_double(char *str, t_vector *v)
 {
 	int escaped;
 
@@ -169,7 +169,7 @@ char	*unquote_double(char *str, t_vector_string *v)
 
 char	*handle_quotes(char *word, t_wordexp *w)
 {
-	t_vector_string	v;
+	t_vector	v;
 
 	vector_initialize(&v);
 	if (*word == '\'')
@@ -187,7 +187,7 @@ char	*handle_quotes(char *word, t_wordexp *w)
 
 char	*handle_expansion(char *word, t_wordexp *w)
 {
-	t_vector_string	v;
+	t_vector	v;
 	size_t			i;
 	char			**fields;
 
@@ -213,7 +213,7 @@ char	*handle_expansion(char *word, t_wordexp *w)
 
 char	*handle_word(char *word, t_wordexp *w)
 {
-	t_vector_string v;
+	t_vector v;
 
 	vector_initialize(&v);
 	while (*word && *word != '\'' && *word != '\"' && *word != '$')

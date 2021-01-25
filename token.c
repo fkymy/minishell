@@ -44,7 +44,7 @@ int			token_ispipe(int t)
 
 char		*get_next_token(char *str, int *type, char **token)
 {
-	t_vector_string v;
+	t_vector v;
 
 	vector_initialize(&v);
 
