@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 20:28:15 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/26 21:26:59 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ typedef struct stat	t_stat;
 ** Globals
 */
 
+int		g_exit_status = 0;
 char	**g_path;
 
 /*
@@ -128,6 +129,27 @@ char	*is_cmd_exist(char **paths, char *cmd)
 ** Execute
 */
 
+char	**process_words(char *argv[])
+{
+	t_wordexp	w;
+	size_t		i;
+
+	w.wordc = 0;
+	w.wordv = NULL;
+
+	i = 0;
+	argv = handle_redir(argv);
+	while (argv[i])
+	{
+		w.offset = 0;
+		if (wordexp(argv[i], &w) < 0)
+			die("wordexp failed");
+		i++;
+	}
+	command_clear_args(argv);
+	return (w.wordv);
+}
+
 pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 {
 	extern char	**environ;
@@ -156,8 +178,7 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 			close(newpipe[1]);
 		}
 
-		argv = handle_redir(argv);
-
+		argv = process_words(argv);
 		if (execve(is_cmd_exist(g_path, argv[0]), argv, environ) < 0)
 		{
 			perror("failed to execve");
@@ -209,7 +230,7 @@ void	run_list(t_command *c)
 	{
 		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
 		{
-			printf("Error: invalid command in list.\n");
+			ft_putstr_fd("Error: invalid command in list.\n", 2);
 			c = c->next;
 			continue ;
 		}
@@ -217,6 +238,7 @@ void	run_list(t_command *c)
 		if (!is_cmd_exist(g_path, c->argv[0])
 				&& is_cmd_builtins(c->argv[0]))
 		{
+			ft_putstr_fd("command not found\n", 2);
 			c = c->next;
 			continue ;
 		}
@@ -232,53 +254,13 @@ void	run_list(t_command *c)
 		c = do_pipeline(c);
 		exited_pid = waitpid(c->pid, &status, 0);
 		assert(exited_pid == c->pid);
+		if (WIFEXITED(status))
+			g_exit_status = WEXITSTATUS(status);
+		else
+			die("child exited abnormally");
 		while (wait(NULL) > 0);
 		c = c->next;
 	}
-}
-
-/*
-** Parse
-**
-** 文字列commandlineをパースして線形リストt_commandを形成します
-** リストのつなぎ目となるopはmandatoryだと';'と'|'のみです
-*/
-
-int			parse(char *commandline, t_command **c)
-{
-	int			type;
-	char		*token;
-	t_command	*current;
-	t_command	*new;
-
-	if (!(*c = command_new()))
-		die("parse failed");
-	current = *c;
-	while ((commandline = get_next_token(commandline, &type, &token)) != NULL) {
-		if (token_isop(type))
-		{
-			if (current->op)
-				return (-1);
-			current->op = type;
-		}
-		else
-		{
-			if (current->op)
-			{
-				if (!(new = command_new()))
-					die("parse failed");
-				current->next = new;
-				current = new;
-			}
-			if (command_append_arg(current, token) < 0)
-				die("parse failed");
-		}
-	}
-	if (current->op == TOKEN_OTHER)
-		die("parse failed");
-	if (!current->op)
-		current->op = type;
-	return (0);
 }
 
 int			main(int argc, char *argv[], char *envp[])

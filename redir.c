@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:14:27 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/21 17:41:01 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 20:07:15 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,11 @@
 
 char	**handle_redir(char **argv)
 {
-	int i;
-	int j;
-	int fd;
-	int argc;
-	char **newargv;
+	int		i;
+	int		j;
+	int		fd;
+	int		argc;
+	char	**newargv;
 
 	argc = 0;
 	while (argv[argc])
@@ -37,9 +37,19 @@ char	**handle_redir(char **argv)
 	fd = -1;
 	while (i < argc)
 	{
+		if (!isredir(argv[i]))
+		{
+			newargv[j++] = argv[i++];
+			continue ;
+		}
+
+		char **word = wordexp_wrap(argv[i + 1]);
+		if (ft_strslen(word) != 1)
+			die("redir operand should not expand to more than one word.");
+
 		if (ft_strcmp(argv[i], "<") == 0)
 		{
-			fd = open(argv[i + 1], O_RDONLY);
+			fd = open(*word, O_RDONLY);
 			if (fd == -1)
 				die(strerror(errno));
 			dup2(fd, 0);
@@ -50,7 +60,7 @@ char	**handle_redir(char **argv)
 		}
 		else if (ft_strcmp(argv[i], ">") == 0)
 		{
-			fd = open(argv[i + 1], O_WRONLY|O_CREAT|O_TRUNC, 0666);
+			fd = open(*word, O_WRONLY|O_CREAT|O_TRUNC, 0666);
 			if (fd == -1)
 				die(strerror(errno));
 			dup2(fd, 1);
@@ -61,7 +71,7 @@ char	**handle_redir(char **argv)
 		}
 		else if (ft_strcmp(argv[i], ">>") == 0)
 		{
-			fd = open(argv[i + 1], O_WRONLY|O_CREAT|O_APPEND, 0666);
+			fd = open(*word, O_WRONLY|O_CREAT|O_APPEND, 0666);
 			if (fd == -1)
 				die(strerror(errno));
 			dup2(fd, 1);
@@ -70,8 +80,8 @@ char	**handle_redir(char **argv)
 			free(argv[i + 1]);
 			i += 2;
 		}
-		else
-			newargv[j++] = argv[i++];
+		free(*word);
+		free(word);
 	}
 	newargv[j] = NULL;
 	free(argv);

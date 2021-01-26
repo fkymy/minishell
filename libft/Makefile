@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/01/14 16:14:22 by yufukuya         ###   ########.fr        #
+#    Updated: 2021/01/24 18:23:24 by yufukuya         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,6 +24,7 @@ mandatory := ft_memset.c \
 			 ft_memchr.c \
 			 ft_memcmp.c \
 			 ft_strlen.c \
+			 ft_strslen.c \
 			 ft_strlcpy.c \
 			 ft_strlcat.c \
 			 ft_strchr.c \
