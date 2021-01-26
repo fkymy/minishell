@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 20:10:41 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/26 20:10:49 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,7 +219,7 @@ void	run_list(t_command *c)
 	{
 		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
 		{
-			printf("Error: invalid command in list.\n");
+			ft_putstr_fd("Error: invalid command in list.\n", 2);
 			c = c->next;
 			continue ;
 		}
@@ -227,7 +227,7 @@ void	run_list(t_command *c)
 		char **builtins = set_builtins_name();
 		if (is_cmd_builtins(c->argv[0], builtins))
 		{
-			printf("unknown command: %s\n", c->argv[0]);
+			ft_putstr_fd("command not found\n", 2);
 			c = c->next;
 			continue ;
 		}

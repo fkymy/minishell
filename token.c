@@ -106,7 +106,6 @@ char		*get_next_token(char *str, int *type, char **token)
 			v.error = 1;
 	}
 
-	vector_append(&v, '\0');
 	if (v.error)
 	{
 		vector_free(&v);
@@ -114,6 +113,6 @@ char		*get_next_token(char *str, int *type, char **token)
 		*type = TOKEN_OTHER;
 		return (NULL);
 	}
-	*token = v.data;
+	*token = vector_gets(&v);
 	return (str);
 }

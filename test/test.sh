@@ -225,6 +225,12 @@ exec_test "echo ''''''"
 exec_test "echo \"\""
 exec_test "echo \"\"\"\"\"\""
 
+# quotes should work empty
+exec_test "ls'''''' | cat -e"
+exec_test "echo'''' '' | cat -e"
+exec_test "echo '''' | cat -e"
+exec_test "echo''\"\" '' '' | cat -e"
+
 # quotes should work with whitespaces
 exec_test "echo '   ' | cat -e"
 exec_test "echo '   ''      ''  ' | cat -e"
@@ -262,6 +268,9 @@ exec_test "echo \" hello \there\my\nfriend\""
 exec_test "echo \" \\\" lit\\\"erally \""
 exec_test "echo \" \\\$USER lit\\\$USERerally \""
 exec_test "echo \" \\\\ lit\\\\erally \""
+
+
+exec_test "echo \"\\\$\$USER\""
 
 # double quotes should expand $
 exec_test "echo \"$\""
@@ -363,3 +372,8 @@ exec_test "echo aaa\$USER\"\$ZXY\"\$ZXY"
 
 # Builtins
 # exec_test 'pwd ; cd .. | pwd'
+
+# Misc
+exec_test 'cat /dev/random | head -c 100 | wc -c'
+
+

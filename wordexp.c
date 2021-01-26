@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 20:09:45 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/26 20:11:14 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,9 +145,9 @@ char	*unquote_double(char *str, t_vector *v)
 	if (*str != '\"')
 		return (str);
 	++str;
-	escaped = 0;
 	while (*str != '\"')
 	{
+		escaped = 0;
 		if (*str == '\\'
 				&& is_double_quote_escapable(str[1]))
 		{

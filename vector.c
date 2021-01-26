@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vector_string.c                                    :+:      :+:    :+:   */
+/*   vector.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:30:31 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/23 16:49:28 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/25 20:32:02 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,20 @@ void	vector_appends(t_vector *v, char *s)
 		vector_append(v, *s++);
 }
 
+char	*vector_gets(t_vector *v)
+{
+	if (v->size == 0)
+		vector_append(v, '\0');
+	else if (v->data[v->size - 1] != '\0')
+		vector_append(v, '\0');
+	if (v->error)
+		return (NULL);
+	return (v->data);
+}
+
 void	vector_free(t_vector *v)
 {
 	free(v->data);
 	v->data = NULL;
 }
+

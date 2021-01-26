@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 20:06:46 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/25 20:29:59 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,8 @@ int				command_append_arg(t_command *c, char *word);
 void			command_clear_args(char **argv);
 void			command_lstclear(t_command **c);
 
-/* vector_string.c */
-typedef struct	s_vector_string
+/* vector.c */
+typedef struct	s_vector
 {
 	char	*data;
 	size_t	size;
@@ -40,6 +40,7 @@ typedef struct	s_vector_string
 void			vector_initialize(t_vector *v);
 void			vector_append(t_vector *v, int c);
 void			vector_appends(t_vector *v, char *s);
+char			*vector_gets(t_vector *v);
 void			vector_free(t_vector *v);
 
 /* token.c */
