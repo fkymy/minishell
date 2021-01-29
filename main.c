@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/26 20:10:49 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/29 14:25:33 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ typedef struct stat	t_stat;
 
 int		g_exit_status = 0;
 char	**g_path;
+t_list	*g_env_dict;
 
 /*
 ** Main Utilities
@@ -42,27 +43,6 @@ void	die(char *msg)
 	ft_putstr_fd(msg, 2);
 	ft_putstr_fd("\n", 2);
 	exit(1);
-}
-
-char	**set_path_name(void)
-{
-	int		i;
-	char	*tmp;
-	char	**path;
-	extern char	**environ;
-
-	i = 0;
-	while (environ[i] && ft_strncmp(environ[i], "PATH", 4))
-		i++;
-	path = NULL;
-	if (environ[i])
-	{
-		if (!(tmp = ft_substr(environ[i], 5, ft_strlen(environ[i]))))
-			return (NULL);
-		if (!(path = ft_split(tmp, ':')))
-			return (NULL);
-	}
-	return (path);
 }
 
 int		is_cmd_builtins(char *cmd, char **builtins)
@@ -262,8 +242,8 @@ int			main(int argc, char *argv[], char *envp[])
 	if (argc != 1)
 		return (42);
 
-	if (!(g_path = set_path_name()))
-		die(strerror(errno));
+	g_env_dict = env_initialize();
+	g_path = ft_split(dict_get_val(g_env_dict, "PATH"), ':');
 	while (42)
 	{
 		ft_putstr_fd("minishell>", 2);

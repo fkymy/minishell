@@ -6,12 +6,14 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/25 20:29:59 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/29 12:21:50 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+
+# include "libft/libft.h"
 
 /* command.c */
 typedef struct	s_command
@@ -78,6 +80,25 @@ typedef struct	s_wordexp
 
 int				wordexp(char *word, t_wordexp *w);
 char			**wordexp_wrap(char *word);
+
+/* dict.c */
+typedef struct	s_dict {
+	char	*key;
+	char	*val;
+}				t_dict;
+
+void			dict_update_val(t_list *dict, char *key, char *val);
+char			*dict_get_val(t_list *dict, char *key);
+int				dict_find_key(t_list *dict, char *key);
+t_dict			*dict_make_new(char *key, char *val);
+
+/* env.c */
+void			env_update_shlvl(t_list *env);
+t_list			*env_initialize(void);
+
+/* env_update.c */
+void			update_shlvl(t_list *env);
+void			update_pwd(t_list *env);
 
 /* main.c */
 extern int		g_exit_status;
