@@ -6,22 +6,13 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/06 18:23:41 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/01/29 18:21:09 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/29 18:34:08 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/libft.h"
 #include "minishell.h"
 #include <stdio.h>
-
-/* int			get_next_commandline(int fd, char **line) */
-/* { */
-/* 	int		ret; */
-/*  */
-/* 	ret = get_next_line(fd, line); */
-/* 	printf("ret: %d, *line: %s\n", ret, *line); */
-/* 	return (ret); */
-/* } */
 
 static int	read_file(char *text[], const int fd)
 {
