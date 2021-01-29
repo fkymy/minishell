@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/29 11:59:06 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/01/29 21:02:40 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 21:31:10 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,23 +41,6 @@ char	*dict_get_val(t_list *dict, char *key)
 		tmp = tmp->next;
 	}
 	return (NULL);
-}
-
-int		dict_find_key(t_list *dict, char *key)
-{
-	t_list	*tmp;
-	int		i;
-
-	i = -1;
-	tmp = dict;
-	while (tmp)
-	{
-		i++;
-		if (ft_strcmp(((t_dict *)tmp->content)->key, key) == 0)
-			break ;
-		tmp = tmp->next;
-	}
-	return (i);
 }
 
 t_dict	*dict_make_new(char *key, char *val)

@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 21:03:42 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 21:31:17 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ typedef struct	s_dict {
 
 void			dict_update_val(t_list *dict, char *key, char *val);
 char			*dict_get_val(t_list *dict, char *key);
-int				dict_find_key(t_list *dict, char *key);
 t_dict			*dict_make_new(char *key, char *val);
 
 /* env.c */
