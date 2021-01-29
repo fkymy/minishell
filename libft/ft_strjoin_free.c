@@ -1,28 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strchr.c                                        :+:      :+:    :+:   */
+/*   ft_strjoin_free.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/07/04 17:55:51 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/28 16:08:30 by yufukuya         ###   ########.fr       */
+/*   Created: 2021/01/23 14:26:05 by tayamamo          #+#    #+#             */
+/*   Updated: 2021/01/23 14:26:09 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char	*ft_strchr(const char *s, int c)
+char		*ft_strjoin_free(char *s1, char *s2)
 {
-	if (!s)
-		return (NULL);
-	while (*s)
-	{
-		if (*s == (char)c)
-			return ((char *)s);
-		s++;
-	}
-	if (*s == '\0' && c == '\0')
-		return ((char *)s);
-	return (NULL);
+	char	*res;
+
+	res = ft_strjoin(s1, s2);
+	free(s1);
+	free(s2);
+	return (res);
 }

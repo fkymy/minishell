@@ -6,12 +6,15 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/25 20:29:59 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/29 18:20:28 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+
+/* get_next_commandline.c */
+int				get_next_commandline(int fd, char **line);
 
 /* command.c */
 typedef struct	s_command
@@ -82,5 +85,11 @@ char			**wordexp_wrap(char *word);
 /* main.c */
 extern int		g_exit_status;
 void			die(char *msg);
+
+/* signal.c */
+volatile sig_atomic_t	g_interrupt; // volatile?
+void					handler(int signum);
+void					set_signal_handler(void (*func)(int));
+
 
 #endif

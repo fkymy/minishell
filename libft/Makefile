@@ -65,7 +65,8 @@ bonus := ft_lstnew.c \
 		 ft_lstiter.c \
 		 ft_lstmap.c \
 		 get_next_line.c \
-		 ft_free_null.c
+		 ft_free_null.c \
+		 ft_strjoin_free.c
 
 objects := $(mandatory:.c=.o)
 
