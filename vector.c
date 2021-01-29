@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vector_string.c                                    :+:      :+:    :+:   */
+/*   vector.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:30:31 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/19 18:35:41 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/25 20:32:02 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "libft/libft.h"
 #include "minishell.h"
 
-void	vector_initialize(t_vector_string *v)
+void	vector_initialize(t_vector *v)
 {
 	v->data = NULL;
 	v->size = 0;
@@ -23,7 +23,7 @@ void	vector_initialize(t_vector_string *v)
 	v->error = 0;
 }
 
-void	vector_append(t_vector_string *v, int c)
+void	vector_append(t_vector *v, int c)
 {
 	size_t	new_capacity;
 	char	*new_data;
@@ -47,8 +47,26 @@ void	vector_append(t_vector_string *v, int c)
 	++v->size;
 }
 
-void	vector_free(t_vector_string *v)
+void	vector_appends(t_vector *v, char *s)
+{
+	while (*s)
+		vector_append(v, *s++);
+}
+
+char	*vector_gets(t_vector *v)
+{
+	if (v->size == 0)
+		vector_append(v, '\0');
+	else if (v->data[v->size - 1] != '\0')
+		vector_append(v, '\0');
+	if (v->error)
+		return (NULL);
+	return (v->data);
+}
+
+void	vector_free(t_vector *v)
 {
 	free(v->data);
 	v->data = NULL;
 }
+

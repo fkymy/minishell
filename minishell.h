@@ -28,21 +28,23 @@ typedef struct	s_command
 
 t_command		*command_new(void);
 int				command_append_arg(t_command *c, char *word);
-void			command_clear(t_command *c);
+void			command_clear_args(char **argv);
 void			command_lstclear(t_command **c);
 
-/* vector_string.c */
-typedef struct	s_vector_string
+/* vector.c */
+typedef struct	s_vector
 {
 	char	*data;
 	size_t	size;
 	size_t	capacity;
 	int		error;
-}				t_vector_string;
+}				t_vector;
 
-void			vector_initialize(t_vector_string *v);
-void			vector_append(t_vector_string *v, int c);
-void			vector_free(t_vector_string *v);
+void			vector_initialize(t_vector *v);
+void			vector_append(t_vector *v, int c);
+void			vector_appends(t_vector *v, char *s);
+char			*vector_gets(t_vector *v);
+void			vector_free(t_vector *v);
 
 /* token.c */
 # define TOKEN_WORD 0
@@ -57,10 +59,31 @@ int				token_isop(int t);
 int				token_ispipe(int t);
 char			*get_next_token(char *str, int *type, char **token);
 
+/* parse.c */
+# define OP_PIPE 2
+# define OP_AND 3
+# define OP_OR 4
+# define OP_SEPARATOR 5
+# define OP_OTHER -1
+int				parse(char *commandline, t_command **c);
+int				isredir(char *str);
+
 /* redir.c */
 char			**handle_redir(char **argv);
 
+/* wordexp.c */
+typedef struct	s_wordexp
+{
+	size_t 		wordc;
+	char		**wordv;
+	size_t		offset;
+}				t_wordexp;
+
+int				wordexp(char *word, t_wordexp *w);
+char			**wordexp_wrap(char *word);
+
 /* main.c */
+extern int		g_exit_status;
 void			die(char *msg);
 
 /* signal.c */

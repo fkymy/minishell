@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 19:37:34 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/19 18:35:53 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/24 18:22:12 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,36 +25,35 @@ t_command	*command_new(void)
 	c->argc = 0;
 	c->argv = NULL;
 	c->op = 0;
+	c->pid = -1;
 	return (c);
+}
+
+void		command_clear_args(char **argv)
+{
+	int	i;
+
+	if (argv == NULL)
+		return ;
+	i = 0;
+	while (argv[i])
+		free(argv[i++]);
+	free(argv);
 }
 
 void		command_lstclear(t_command **c)
 {
-	t_command	*head;
 	t_command	*tmp;
 
 	if (c == NULL)
 		return ;
-	head = *c;
 	while (*c)
 	{
 		tmp = (*c)->next;
-		command_clear(*c);
+		command_clear_args((*c)->argv);
+		free(*c);
 		*c = tmp;
 	}
-	head = NULL;
-}
-
-void		command_clear(t_command *c)
-{
-	int	i;
-
-	if (c == NULL)
-		return ;
-	i = 0;
-	while (i < c->argc)
-		free(c->argv[i++]);
-	free(c);
 }
 
 int			command_append_arg(t_command *c, char *word)
