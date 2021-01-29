@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 13:56:34 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/01/22 14:00:47 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 18:25:18 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,35 +14,24 @@
 #include "libft/libft.h"
 #include "minishell.h"
 
-void	signal_handler(int signum)
+void	handler(int signum)
 {
+	int	save_errno;
+
+	save_errno = errno;
+	ft_putstr_fd("\033[2D\033[0K", 2);
 	if (signum == SIGINT)
 	{
-		if (g_pid == 0)
-		{
-			ft_putstr_fd("\033[2D\033[0K", 2);
-			ft_putstr_fd("\nminishell>", 2);
-		}
-		else
-			ft_putstr_fd("\n", 2);
+		g_interrupt = signum;
+		ft_putstr_fd("\nminishell>", 2);
 	}
-	if (signum == SIGQUIT)
-	{
-		if (g_pid == 0)
-			ft_putstr_fd("\033[2D\033[0K", 2);
-		else
-		{
-			ft_putstr_fd("Quit: ", 2);
-			ft_putnbr_fd(SIGQUIT, 2);
-			ft_putstr_fd("\n", 2);
-		}
-	}
+	errno = save_errno;
 }
 
-void	handle_signals(void)
+void	set_signal_handler(void (*func)(int))
 {
-	if (signal(SIGINT, signal_handler) == SIG_ERR)
+	if (signal(SIGINT, func) == SIG_ERR)
 		die(strerror(errno));
-	if (signal(SIGQUIT, signal_handler) == SIG_ERR)
+	if (signal(SIGQUIT, func) == SIG_ERR)
 		die(strerror(errno));
 }

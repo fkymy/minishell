@@ -6,17 +6,15 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/22 18:00:50 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 18:20:28 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-/* signal */
-volatile sig_atomic_t	g_pid;
-void			signal_handler(int signum);
-void			handle_signals(void);
+/* get_next_commandline.c */
+int				get_next_commandline(int fd, char **line);
 
 /* command.c */
 typedef struct	s_command
@@ -64,5 +62,11 @@ char			**handle_redir(char **argv);
 
 /* main.c */
 void			die(char *msg);
+
+/* signal.c */
+volatile sig_atomic_t	g_interrupt; // volatile?
+void					handler(int signum);
+void					set_signal_handler(void (*func)(int));
+
 
 #endif

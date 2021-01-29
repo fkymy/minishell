@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/23 15:59:17 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 18:22:02 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,7 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		die("Failed to fork");
 	else if (pid == 0)
 	{
+		set_signal_handler(SIG_DFL);
 		if (haspipe)
 		{
 			close(lastpipe[1]);
@@ -155,6 +156,7 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		perror("This should not be printed if execvp is successful");
 		_exit(1);
 	}
+	set_signal_handler(SIG_IGN);
 	if (haspipe)
 	{
 		close(lastpipe[0]);
@@ -219,8 +221,18 @@ void	run_list(t_command *c)
 			continue ;
 		}
 		c = do_pipeline(c);
-		g_pid = c->pid;
 		exited_pid = waitpid(c->pid, &status, 0);
+		if (WIFEXITED(status))
+		{
+			/* exit statusの記録、処理 */
+		}
+		else if (WIFSIGNALED(status))
+		{
+			if (WTERMSIG(status) == SIGQUIT)
+				ft_putstr_fd("Quit: 3\n", 2);
+			else
+				ft_putstr_fd("\n", 2);
+		}
 		assert(exited_pid == c->pid);
 		while (wait(NULL) > 0);
 		c = c->next;
@@ -274,10 +286,9 @@ int			parse(char *commandline, t_command **c)
 int			main(int argc, char *argv[], char *envp[])
 {
 	char		*commandline;
-	char		*tmp;
 	t_command	*c;
 	int			ret;
-	int			last_ret;
+	int			needprompt;
 
 	(void)argv;
 	(void)envp;
@@ -286,26 +297,28 @@ int			main(int argc, char *argv[], char *envp[])
 
 	if (!(g_path = set_path_name()))
 		die(strerror(errno));
-	last_ret = 1;
+	needprompt = 1;
+	commandline = NULL;
 	while (42)
 	{
-		if (last_ret == 1)
+		set_signal_handler(handler);
+		g_interrupt = 0;
+		if (needprompt)
 		{
 			ft_putstr_fd("minishell>", 2);
-			commandline = ft_strdup("");
+			needprompt = 0;
 		}
-		g_pid = 0;
-		handle_signals();
-		if ((ret = get_next_line(0, &tmp)) < 0)
-			die("gnl failed.");
 
-		if (ret == 0 && tmp[0] == '\0' && last_ret == 1)
-		{
+		ret = get_next_commandline(0, &commandline);
+		if (ret < 0)
+			die("gnc failed.");
+		if (ret == 0)
 			ft_putstr_fd("\033[0K", 2);
+		if (ret == 0 && *commandline == '\0')
+		{
 			ft_putstr_fd("exit\n", 2);
-			break ;
+			exit(1);
 		}
-		commandline = ft_strjoin_free(commandline, tmp);
 		if (ret == 1)
 		{
 			if (parse(commandline, &c) < 0)
@@ -313,9 +326,10 @@ int			main(int argc, char *argv[], char *envp[])
 			else if (c->argc)
 				run_list(c);
 			free(commandline);
+			commandline = NULL;
 			command_lstclear(&c);
+			needprompt = 1;
 		}
-		last_ret = ret;
 	}
 	return (0);
 }
