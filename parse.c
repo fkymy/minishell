@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/21 17:47:51 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 18:46:43 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/29 18:53:09 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ int			parse(char *commandline, t_command **c)
 	}
 	if (type == TOKEN_OTHER)
 		die("token failed");
-	if (!current->op)
+	if (current->argc && !current->op)
 		return (set_operator(current, TOKEN_SEPARATOR));
 	return (0);
 }

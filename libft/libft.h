@@ -83,5 +83,6 @@ t_list			*ft_lstmap(t_list *lst, void *(*f)(void *),
 
 int				get_next_line(int fd, char **line);
 void			ft_free_null(char **ptr);
+char			*ft_strjoin_free(char *s1, char *s2);
 
 #endif

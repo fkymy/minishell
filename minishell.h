@@ -6,14 +6,17 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 12:21:50 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 21:03:42 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-# include "libft/libft.h"
+#include "libft/libft.h"
+
+/* get_next_commandline.c */
+int				get_next_commandline(int fd, char **line);
 
 /* command.c */
 typedef struct	s_command
@@ -103,5 +106,11 @@ void			update_pwd(t_list *env);
 /* main.c */
 extern int		g_exit_status;
 void			die(char *msg);
+
+/* signal.c */
+volatile sig_atomic_t	g_interrupt; // volatile?
+void					handler(int signum);
+void					set_signal_handler(void (*func)(int));
+
 
 #endif

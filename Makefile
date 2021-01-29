@@ -1,8 +1,8 @@
-# Makefile for minishell, updated Fri Jan 29 12:23:10 JST 2021
+# Makefile for minishell, updated Fri Jan 29 21:04:13 JST 2021
 
-SRC := command.c dict.c env.c main.c parse.c redir.c token.c vector.c wordexp.c
+SRC := command.c dict.c env.c get_next_commandline.c main.c parse.c redir.c signal.c token.c vector.c wordexp.c
 
-OBJ := command.o dict.o env.o main.o parse.o redir.o token.o vector.o wordexp.o
+OBJ := command.o dict.o env.o get_next_commandline.o main.o parse.o redir.o signal.o token.o vector.o wordexp.o
 
 HDR := minishell.h
 

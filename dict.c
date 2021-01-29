@@ -6,11 +6,12 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/29 11:59:06 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/01/29 12:12:34 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 21:02:40 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include "libft/libft.h"
 
 void	dict_update_val(t_list *dict, char *key, char *val)
 {

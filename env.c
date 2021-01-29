@@ -6,13 +6,14 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/28 12:12:16 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/01/29 13:11:12 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 21:02:59 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 #include <unistd.h>
 #include "minishell.h"
+#include "libft/libft.h"
 
 extern char		**environ;
 

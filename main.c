@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 14:25:33 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 21:01:58 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,7 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		die("Failed to fork");
 	else if (pid == 0)
 	{
+		set_signal_handler(SIG_DFL);
 		if (haspipe)
 		{
 			close(lastpipe[1]);
@@ -156,6 +157,7 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		perror("This should not be printed if execvp is successful");
 		_exit(1);
 	}
+	set_signal_handler(SIG_IGN);
 	if (haspipe)
 	{
 		close(lastpipe[0]);
@@ -222,6 +224,17 @@ void	run_list(t_command *c)
 		}
 		c = do_pipeline(c);
 		exited_pid = waitpid(c->pid, &status, 0);
+		if (WIFEXITED(status))
+		{
+			/* exit statusの記録、処理 */
+		}
+		else if (WIFSIGNALED(status))
+		{
+			if (WTERMSIG(status) == SIGQUIT)
+				ft_putstr_fd("Quit: 3\n", 2);
+			else
+				ft_putstr_fd("\n", 2);
+		}
 		assert(exited_pid == c->pid);
 		if (WIFEXITED(status))
 			g_exit_status = WEXITSTATUS(status);
@@ -236,6 +249,8 @@ int			main(int argc, char *argv[], char *envp[])
 {
 	char		*commandline;
 	t_command	*c;
+	int			ret;
+	int			needprompt;
 
 	(void)argv;
 	(void)envp;
@@ -243,20 +258,41 @@ int			main(int argc, char *argv[], char *envp[])
 		return (42);
 
 	g_env_dict = env_initialize();
-	g_path = ft_split(dict_get_val(g_env_dict, "PATH"), ':');
+	if (!(g_path = ft_split(dict_get_val(g_env_dict, "PATH"), ':')))
+		die(strerror(errno));
+	needprompt = 1;
+	commandline = NULL;
 	while (42)
 	{
-		ft_putstr_fd("minishell>", 2);
-		if (get_next_line(0, &commandline) < 0)
-			die("gnl failed.");
+		set_signal_handler(handler);
+		g_interrupt = 0;
+		if (needprompt)
+		{
+			ft_putstr_fd("minishell>", 2);
+			needprompt = 0;
+		}
 
-		if (parse(commandline, &c) < 0)
-			ft_putstr_fd("minishell: syntax error\n", 2);
-		else if (c->argc)
-			run_list(c);
-
-		free(commandline);
-		command_lstclear(&c);
+		ret = get_next_commandline(0, &commandline);
+		if (ret < 0)
+			die("gnc failed.");
+		if (ret == 0)
+			ft_putstr_fd("\033[0K", 2);
+		if (ret == 0 && *commandline == '\0')
+		{
+			ft_putstr_fd("exit\n", 2);
+			exit(1);
+		}
+		if (ret == 1)
+		{
+			if (parse(commandline, &c) < 0)
+				ft_putstr_fd("minishell: syntax error\n", 2);
+			else if (c->argc)
+				run_list(c);
+			free(commandline);
+			commandline = NULL;
+			command_lstclear(&c);
+			needprompt = 1;
+		}
 	}
 	return (0);
 }
