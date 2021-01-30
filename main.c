@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 21:43:26 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/30 20:34:03 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ typedef struct stat	t_stat;
 
 int		g_exit_status = 0;
 char	**g_path;
-t_list	*g_env_dict;
+t_env	*g_env;
 
 /*
 ** Main Utilities
@@ -251,8 +251,8 @@ int			main(int argc, char *argv[], char *envp[])
 	if (argc != 1)
 		return (42);
 
-	g_env_dict = env_initialize();
-	if (!(g_path = ft_split(dict_get_val(g_env_dict, "PATH"), ':')))
+	g_env = env_init();
+	if (!(g_path = ft_split(env_get_value(g_env, "PATH"), ':')))
 		die(strerror(errno));
 	needprompt = 1;
 	commandline = NULL;

@@ -6,14 +6,12 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 21:31:17 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/30 20:33:53 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
-
-#include "libft/libft.h"
 
 /* get_next_commandline.c */
 int				get_next_commandline(int fd, char **line);
@@ -84,23 +82,15 @@ typedef struct	s_wordexp
 int				wordexp(char *word, t_wordexp *w);
 char			**wordexp_wrap(char *word);
 
-/* dict.c */
-typedef struct	s_dict {
-	char	*key;
-	char	*val;
-}				t_dict;
-
-void			dict_update_val(t_list *dict, char *key, char *val);
-char			*dict_get_val(t_list *dict, char *key);
-t_dict			*dict_make_new(char *key, char *val);
-
 /* env.c */
-void			env_update_shlvl(t_list *env);
-t_list			*env_initialize(void);
+typedef struct		s_env {
+	struct s_env	*next;
+	char			*name;
+	char			*value;
+}					t_env;
 
-/* env_update.c */
-void			update_shlvl(t_list *env);
-void			update_pwd(t_list *env);
+t_env			*env_init(void);
+char			*env_get_value(t_env *e, char *name);
 
 /* main.c */
 extern int		g_exit_status;
