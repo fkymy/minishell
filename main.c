@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 18:42:06 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/30 19:04:21 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,7 +169,12 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		}
 
 		argv = process_words(argv);
-		if (execve(is_cmd_exist(g_path, argv[0]), argv, environ) < 0)
+		if (ft_strcmp(argv[0], "export") == 0)
+		{
+			int ret = export(ispipe, haspipe, argv, environ);
+			exit(ret);
+		}
+		else if (execve(is_cmd_exist(g_path, argv[0]), argv, environ) < 0)
 		{
 			perror("failed to execve");
 			_exit(1);

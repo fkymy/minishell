@@ -6,12 +6,15 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 18:20:28 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/30 18:45:36 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+
+/* builtins */
+int				export(int ispipe, int haspipe, char *argv[], char *envp[]);
 
 /* get_next_commandline.c */
 int				get_next_commandline(int fd, char **line);
