@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 18:42:06 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/30 20:34:03 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ typedef struct stat	t_stat;
 
 int		g_exit_status = 0;
 char	**g_path;
+t_env	*g_env;
 
 /*
 ** Main Utilities
@@ -44,49 +45,23 @@ void	die(char *msg)
 	exit(1);
 }
 
-char	**set_path_name(void)
-{
-	int		i;
-	char	*tmp;
-	char	**path;
-	extern char	**environ;
-
-	i = 0;
-	while (environ[i] && ft_strncmp(environ[i], "PATH", 4))
-		i++;
-	path = NULL;
-	if (environ[i])
-	{
-		if (!(tmp = ft_substr(environ[i], 5, ft_strlen(environ[i]))))
-			return (NULL);
-		if (!(path = ft_split(tmp, ':')))
-			return (NULL);
-	}
-	return (path);
-}
-
-int		is_cmd_builtins(char *cmd, char **builtins)
+int		is_cmd_builtins(char *cmd)
 {
 	int i;
+	char **builtins;
 
+	builtins = ft_split("echo cd pwd export unset env exit", ' ');
+	if (!builtins)
+		die(strerror(errno));
 	i = 0;
 	while (builtins[i])
 		if (ft_strcmp(cmd, builtins[i++]) == 0)
+		{
+			ft_split_free_null(builtins);
 			return (0);
+		}
+	ft_split_free_null(builtins);
 	return (42);
-}
-
-char	**set_builtins_name(void)
-{
-	char	**builtins;
-
-	builtins = ft_split("file rm true false time sleep wc ls echo cat cd pwd export unset env exit", ' ');
-	if (!builtins)
-	{
-		ft_putstr_fd(strerror(errno), 2);
-		exit(1);
-	}
-	return (builtins);
 }
 
 char	*is_cmd_exist(char **paths, char *cmd)
@@ -226,8 +201,7 @@ void	run_list(t_command *c)
 			continue ;
 		}
 
-		char **builtins = set_builtins_name();
-		if (is_cmd_builtins(c->argv[0], builtins))
+		if (is_cmd_builtins(c->argv[0]) && !is_cmd_exist(g_path, c->argv[0]))
 		{
 			ft_putstr_fd("command not found\n", 2);
 			c = c->next;
@@ -277,7 +251,8 @@ int			main(int argc, char *argv[], char *envp[])
 	if (argc != 1)
 		return (42);
 
-	if (!(g_path = set_path_name()))
+	g_env = env_init();
+	if (!(g_path = ft_split(env_get_value(g_env, "PATH"), ':')))
 		die(strerror(errno));
 	needprompt = 1;
 	commandline = NULL;
