@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 21:01:58 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/29 21:43:26 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,28 +45,23 @@ void	die(char *msg)
 	exit(1);
 }
 
-int		is_cmd_builtins(char *cmd, char **builtins)
+int		is_cmd_builtins(char *cmd)
 {
 	int i;
+	char **builtins;
 
+	builtins = ft_split("echo cd pwd export unset env exit", ' ');
+	if (!builtins)
+		die(strerror(errno));
 	i = 0;
 	while (builtins[i])
 		if (ft_strcmp(cmd, builtins[i++]) == 0)
+		{
+			ft_split_free_null(builtins);
 			return (0);
+		}
+	ft_split_free_null(builtins);
 	return (42);
-}
-
-char	**set_builtins_name(void)
-{
-	char	**builtins;
-
-	builtins = ft_split("file rm true false time sleep wc ls echo cat cd pwd export unset env exit", ' ');
-	if (!builtins)
-	{
-		ft_putstr_fd(strerror(errno), 2);
-		exit(1);
-	}
-	return (builtins);
 }
 
 char	*is_cmd_exist(char **paths, char *cmd)
@@ -206,8 +201,7 @@ void	run_list(t_command *c)
 			continue ;
 		}
 
-		char **builtins = set_builtins_name();
-		if (is_cmd_builtins(c->argv[0], builtins))
+		if (is_cmd_builtins(c->argv[0]) && !is_cmd_exist(g_path, c->argv[0]))
 		{
 			ft_putstr_fd("command not found\n", 2);
 			c = c->next;
