@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/30 18:45:36 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/31 10:31:03 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,16 @@ typedef struct	s_wordexp
 
 int				wordexp(char *word, t_wordexp *w);
 char			**wordexp_wrap(char *word);
+
+/* env.c */
+typedef struct		s_env {
+	struct s_env	*next;
+	char			*name;
+	char			*value;
+}					t_env;
+
+t_env			*env_init(void);
+char			*env_get_value(t_env *e, char *name);
 
 /* main.c */
 extern int		g_exit_status;
