@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/31 10:31:19 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/31 14:00:07 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,7 +257,7 @@ int			main(int argc, char *argv[], char *envp[])
 		return (42);
 
 	g_env = env_init();
-	if (!(g_path = ft_split(env_get_value(g_env, "PATH"), ':')))
+	if (!(g_path = ft_split(env_get(g_env, "PATH")->value, ':')))
 		die(strerror(errno));
 	needprompt = 1;
 	commandline = NULL;
