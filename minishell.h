@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/30 20:33:53 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/31 11:39:16 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ typedef struct		s_env {
 }					t_env;
 
 t_env			*env_init(void);
-char			*env_get_value(t_env *e, char *name);
+t_env			*env_get(t_env *e, char *name);
 
 /* main.c */
 extern int		g_exit_status;

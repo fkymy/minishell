@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/01/29 21:20:11 by tayamamo         ###   ########.fr        #
+#    Updated: 2021/01/31 11:07:12 by yufukuya         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,6 +46,7 @@ mandatory := ft_memset.c \
 
 mandatory += ft_substr.c \
 			 ft_strjoin.c \
+			 ft_strjoin_chr.c \
 			 ft_strtrim.c \
 			 ft_split.c \
 			 ft_itoa.c \
@@ -67,7 +68,8 @@ bonus := ft_lstnew.c \
 		 get_next_line.c \
 		 ft_free_null.c \
 		 ft_strjoin_free.c \
-		 ft_split_free_null.c
+		 ft_split_free_null.c \
+		 ft_teardown.c
 
 objects := $(mandatory:.c=.o)
 

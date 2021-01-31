@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/27 20:21:32 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 21:19:53 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/01/31 11:06:43 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ char			*ft_strdup(const char *s1);
 
 char			*ft_substr(char const *s, unsigned int start, size_t len);
 char			*ft_strjoin(char const *s1, char const *s2);
+char			*ft_strjoin_chr(char *s1, char *s2, char c);
 char			*ft_strtrim(char const *s1, char const *set);
 char			**ft_split(char const *s, char c);
 char			*ft_itoa(int n);
@@ -85,5 +86,6 @@ int				get_next_line(int fd, char **line);
 void			ft_free_null(char **ptr);
 char			*ft_strjoin_free(char *s1, char *s2);
 void			ft_split_free_null(char **ptr);
+char			**ft_teardown(char **res, int allocations);
 
 #endif
