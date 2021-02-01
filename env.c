@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/28 12:12:16 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/01 16:08:49 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 20:38:43 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,10 +302,11 @@ t_env	*env_init(void)
 	}
 	if (!(cwd = getcwd(NULL, 0)))
 		die(strerror(errno));
-	if (!(shell = ft_strjoin_chr(cwd, "./minishell", '/')))
+	if (!(shell = ft_strjoin_chr(cwd, "minishell", '/')))
 		die(strerror(errno));
 	if (env_get(head, "PATH") == NULL)
 		env_set(&head, env_make_new("PATH", "/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin:."));
+	env_set(&head, env_make_new("OLDPWD", NULL));
 	if (env_get(head, "PWD") == NULL)
 		env_set(&head, env_make_new("PWD", cwd));
 	if (env_get(head, "SHLVL") == NULL)
