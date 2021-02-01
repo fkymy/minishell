@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 14:21:32 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 18:45:57 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,60 +114,53 @@ char	**process_words(char *argv[])
 	return (w.wordv);
 }
 
-int			is_builtin(char *cmd)
+int			is_builtin(char *word)
 {
+	int			ret;
+	char		**exp;
 	int			i;
 	const char	*builtins[] = {
-		"export",
-		"unset",
-		"env",
+		"export", "unset", "env", "exit",
 		NULL
 	};
 
+	ret = 0;
+	exp = wordexp_wrap(word);
 	i = -1;
 	while (builtins[++i])
-		if (ft_strcmp(builtins[i], cmd) == 0)
-			return (1);
-	return (0);
+		if (ft_strcmp(builtins[i], *exp) == 0)
+		{
+			ret = 1;
+			break ;
+		}
+	ft_split_free_null(exp);
+	return (ret);
 }
 
 typedef int	(*t_builtin)(char **, char **, char **);
 
-int			run_builtin(char *argv[], char **err)
-{
-	if (ft_strcmp(argv[0], "export") == 0)
-		return (ft_export(argv, err));
-	if (ft_strcmp(argv[0], "unset") == 0)
-		return (ft_unset(argv, err));
-	if (ft_strcmp(argv[0], "env") == 0)
-		return (ft_env(argv, err));
-	return (-1);
-}
-
 int			exec_builtin(char *argv[], pid_t pid)
 {
-	int		status;
-	char	*err;
+	// handle redirections
+	(void)pid;
 
-	err = NULL;
-	status = run_builtin(argv,  &err);
-	if (pid == 0)
-	{
-		if (err)
-		{
-			ft_putstr_fd("ERROR: ", 2);
-			ft_putstr_fd(err, 2);
-			ft_putstr_fd("\n", 2);
-		}
-		exit(status);
-	}
-	return (status);
+	if (ft_strcmp(argv[0], "export") == 0)
+		return (ft_export(argv));
+	if (ft_strcmp(argv[0], "unset") == 0)
+		return (ft_unset(argv));
+	if (ft_strcmp(argv[0], "env") == 0)
+		return (ft_env(argv));
+	if (ft_strcmp(argv[0], "exit") == 0)
+		return (ft_exit(argv));
+	return (-1);
 }
 
 pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 {
 	pid_t		pid;
 	int			newpipe[2];
+	char		**envp;
+	char		*pathname;
 
 	if (ispipe)
 		pipe(newpipe);
@@ -192,12 +185,18 @@ pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 			close(newpipe[1]);
 		}
 
-		/* start execute */
 		argv = process_words(argv);
-		char **envp = env_make_envp(g_env, 0);
+
 		if (is_builtin(argv[0]))
-			exec_builtin(argv, pid);
-		else if (execve(is_cmd_exist(g_path, argv[0]), argv, envp) < 0)
+			exit(exec_builtin(argv, pid));
+
+		envp = env_make_envp(g_env, 0);
+		if (!(pathname = is_cmd_exist(g_path, argv[0])))
+		{
+			ft_putstr_fd("minishell: command not found\n", 2);
+			exit(127);
+		}
+		if (execve(pathname, argv, envp) < 0)
 		{
 			perror("failed to execve");
 			_exit(1);
@@ -228,7 +227,18 @@ t_command	*do_pipeline(t_command *c)
 	while (c)
 	{
 		ispipe = c->op == OP_PIPE ? 1 : 0;
-		// set _ env to pathname
+
+		/* if (!is_cmd_exist(g_path, c->argv[0]) && !is_builtin(c->argv[0])) */
+		/* { */
+		/* 	ft_putstr_fd("minishell: command not found\n", 2); */
+		/* 	g_exit_status = 127; */
+		/* 	if (!c->next) */
+		/* 		break ; */
+		/* 	c = c->next; */
+		/* 	continue ; */
+		/* } */
+
+		// set _ env to pathname?
 		c->pid = start_command(c->argv, ispipe, haspipe, lastpipe);
 		haspipe = ispipe;
 		if (ispipe && c->next)
@@ -241,15 +251,6 @@ t_command	*do_pipeline(t_command *c)
 	return (c);
 }
 
-int		check_pipeline(t_command *c)
-{
-	// check if command exist for pipeline
-	// if command not found, print and continue
-	// if all is fine, return NULL
-	(void)c;
-	return (0);
-}
-
 void	run_list(t_command *c)
 {
 	pid_t	exited_pid;
@@ -257,36 +258,39 @@ void	run_list(t_command *c)
 
 	while (c)
 	{
-		// if exit, exit with status.
-		if (check_pipeline(c))
+		if (is_builtin(c->argv[0]) && c->op != OP_PIPE)
 		{
-			printf("bad pipeline\n");
+			exec_builtin(c->argv, c->pid);
 			c = c->next;
 			continue ;
 		}
 		c = do_pipeline(c);
-		exited_pid = waitpid(c->pid, &status, 0);
-		assert(exited_pid == c->pid);
-		if (WIFEXITED(status))
+		if (c->pid != -1)
 		{
-			g_exit_status = WEXITSTATUS(status);
-			// if special builtin and not in pipeline
-			if (WEXITSTATUS(status) == 21 && c->op != OP_PIPE)
+			ft_putstr_fd("do_pipeline returned pid\n", 2);
+			exited_pid = waitpid(c->pid, &status, 0);
+			assert(exited_pid == c->pid);
+			if (WIFEXITED(status))
 			{
-				ft_putstr_fd("do builtin again\n", 1);
-				exec_builtin(c->argv, c->pid);
+				g_exit_status = WEXITSTATUS(status);
+				// if special builtin and not in pipeline
+				/* if (WEXITSTATUS(status) == 21 && c->op != OP_PIPE) */
+				/* { */
+				/* 	ft_putstr_fd("do builtin again\n", 1); */
+				/* 	exec_builtin(c->argv, c->pid); */
+				/* } */
 			}
-		}
-		else if (WIFSIGNALED(status))
-		{
-			if (WTERMSIG(status) == SIGQUIT)
-				ft_putstr_fd("Quit: 3\n", 2);
+			else if (WIFSIGNALED(status))
+			{
+				if (WTERMSIG(status) == SIGQUIT)
+					ft_putstr_fd("Quit: 3\n", 2);
+				else
+					ft_putstr_fd("\n", 2);
+			}
 			else
-				ft_putstr_fd("\n", 2);
+				die("child exited abnormally");
+			while (wait(NULL) > 0);
 		}
-		else
-			die("child exited abnormally");
-		while (wait(NULL) > 0);
 		c = c->next;
 	}
 }
@@ -302,6 +306,7 @@ int			main(int argc, char *argv[])
 	if (argc != 1)
 		return (42);
 
+	g_exit_status = 0;
 	g_env = env_init();
 	if (!(g_path = ft_split(env_get(g_env, "PATH")->value, ':')))
 		die(strerror(errno));

@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 14:54:32 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 16:06:13 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,10 @@
 # define MINISHELL_H
 
 /* builtins */
-// int				export(char *argv[], char *envp[]);
-int				ft_export(char *argv[], char **err);
-int				ft_unset(char *argv[], char **err);
-int				ft_env(char *argv[], char **err);
+int				ft_exit(char *argv[]);
+int				ft_export(char *argv[]);
+int				ft_unset(char *argv[]);
+int				ft_env(char *argv[]);
 
 /* get_next_commandline.c */
 int				get_next_commandline(int fd, char **line);

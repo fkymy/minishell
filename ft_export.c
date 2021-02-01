@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   export.c                                           :+:      :+:    :+:   */
+/*   ft_export.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/01/29 20:08:11 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 15:02:50 by yufukuya         ###   ########.fr       */
+/*   Created: 2021/02/01 15:32:29 by yufukuya          #+#    #+#             */
+/*   Updated: 2021/02/01 16:07:56 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ int			env_isvalid(char *str)
 	return (1);
 }
 
-int			ft_export(char *argv[], char **err)
+int			ft_export(char *argv[])
 {
 	int	i;
 	int	error;
@@ -90,7 +90,7 @@ int			ft_export(char *argv[], char **err)
 	{
 		if (!env_isvalid(argv[i]))
 		{
-			ft_stradd(err, "minishell: export: not a valid identifier\n");
+			ft_putstr_fd("minishell: export: not a valid identifier\n", 2);
 			g_exit_status = 1;
 			error = 1;
 			i++;

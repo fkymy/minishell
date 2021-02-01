@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   unset.c                                            :+:      :+:    :+:   */
+/*   ft_unset.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/01/30 19:58:53 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 15:02:00 by yufukuya         ###   ########.fr       */
+/*   Created: 2021/02/01 15:32:02 by yufukuya          #+#    #+#             */
+/*   Updated: 2021/02/01 16:08:19 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ static int	env_isvalid(char *str)
 	return (1);
 }
 
-int			ft_unset(char *argv[], char **err)
+int			ft_unset(char *argv[])
 {
 	int	error;
 	int	i;
@@ -42,7 +42,7 @@ int			ft_unset(char *argv[], char **err)
 	{
 		if (!env_isvalid(argv[i]))
 		{
-			ft_stradd(err, "minishell: unset: not a valid identifier\n");
+			ft_putstr_fd("minishell: unset: not a valid identifier\n", 2);
 			g_exit_status = 1;
 			error = 1;
 			i++;

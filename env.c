@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/28 12:12:16 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/01 14:57:15 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 16:08:49 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,14 @@
 
 extern char		**environ;
 
-int		ft_env(char *argv[], char **err)
+int		ft_env(char *argv[])
 {
 	t_env	*e;
 	char	*line;
 
 	if (ft_strslen(argv) != 1)
 	{
-		ft_stradd(err, "minishell: env: too many arguments\n");
+		ft_putstr_fd("minishell: env: too many arguments\n", 2);
 		return (1);
 	}
 
@@ -50,11 +50,11 @@ void	env_print(char *str, int quote)
 	if (p)
 	{
 		write(1, str, p++ - str);
-		write(1, "=", 2);
+		write(1, "=", 1);
 		write(1, "\"", quote);
 		write(1, p, ft_strlen(p));
 		write(1, "\"", quote);
-		write(1, "\n", 2);
+		write(1, "\n", 1);
 	}
 	else
 	{

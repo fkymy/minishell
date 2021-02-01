@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/31 19:22:18 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 18:01:18 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -256,4 +256,3 @@ char	**wordexp_wrap(char *word)
 		die("wordexp failed");
 	return (w.wordv);
 }
-
