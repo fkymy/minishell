@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/31 10:52:59 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/31 10:54:47 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/31 14:42:28 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,4 +22,3 @@ char	**ft_teardown(char **res, int allocations)
 	free(res);
 	return (NULL);
 }
-

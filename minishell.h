@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/31 13:59:59 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 14:54:32 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,10 @@
 # define MINISHELL_H
 
 /* builtins */
-int				export(int ispipe, int haspipe, char *argv[], char *envp[]);
+// int				export(char *argv[], char *envp[]);
+int				ft_export(char *argv[], char **err);
+int				ft_unset(char *argv[], char **err);
+int				ft_env(char *argv[], char **err);
 
 /* get_next_commandline.c */
 int				get_next_commandline(int fd, char **line);
@@ -92,15 +95,24 @@ typedef struct		s_env {
 	char			*value;
 }					t_env;
 
+extern t_env	*g_env;
 t_env			*env_init(void);
+t_env			*env_new(char *str);
 t_env			*env_get(t_env *e, char *name);
+void			env_set(t_env **e, t_env *new);
+void			env_unset(t_env **ep, char *name);
+char			**env_make_envp(t_env *e, int isexport);
+char			*env_split_name(char *str);
+void			env_print(char *str, int quote);
+
+char			*env_join_name_value(t_env *env);
 
 /* main.c */
 extern int		g_exit_status;
 void			die(char *msg);
 
 /* signal.c */
-volatile sig_atomic_t	g_interrupt; // volatile?
+volatile sig_atomic_t	g_interrupt;
 void					handler(int signum);
 void					set_signal_handler(void (*func)(int));
 

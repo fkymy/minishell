@@ -109,6 +109,9 @@ function exec_test()
 # Mandatory Part
 echo > results.txt ;
 
+# Builtins
+exec_test 'export'
+
 # Syntax error
 # exec_test ';'
 # exec_test '|'
@@ -126,6 +129,13 @@ echo > results.txt ;
 # exec_test 'echo hello >> ;'
 # exec_test 'cat < |'
 # exec_test 'cat < ;'
+
+# Commnad not found
+exec_test 'unknowncommand'
+exec_test 'unknowncommand ; commandunknown'
+exec_test 'unknowncommand | commandunknown'
+exec_test 'unknowncommand > nani ; file nani ; rm nani'
+exec_test 'asdfas | echo hello | echo world > WORLD | asdfas ; file WORLD; rm WORLD'
 
 # ; Separator
 exec_test 'echo hello'
@@ -220,10 +230,10 @@ exec_test "echo \"oh'h\"\"ello\"wor\"\"''''''ld\"yeah'w''ow\""
 exec_test "echo hel'lo;''wor|$'''ld yeah"
 
 # quotes should work empty
-exec_test "echo ''"
-exec_test "echo ''''''"
-exec_test "echo \"\""
-exec_test "echo \"\"\"\"\"\""
+exec_test "echo '' | cat -e"
+exec_test "echo '''''' | cat -e"
+exec_test "echo \"\" | cat -e"
+exec_test "echo \"\"\"\"\"\" | cat -e"
 
 # quotes should work empty
 exec_test "ls'''''' | cat -e"
@@ -316,48 +326,42 @@ exec_test 'echo $USER $ZXY $PWD'
 exec_test 'echo $UNKNWONVARIABLE $_WHATis_This999 $_1324810'
 exec_test "echo \$USER aaa\$USER\"bbb 'ccc' \"\"\"\"\$USER \"\$USERddd"
 exec_test "echo aaa\$USER\"\$ZXY\"\$ZXY"
+exec_test "export WOW='hello world' ; cat aaa\$WOW ; cat \"aaa\$WOW\" ; cat 'aaa\$WOW'"
 
 # variable expansion should work with ;
-# exec_test 'export A=aaa ; echo $A ; unset A'
+exec_test 'export A=aaa ; echo $A ; unset A ; echo $A | cat -e'
 
 # variable expansion order is undefined in pipe
-# exec_test 'export B=bbb | echo $B | cat'
-# exec_test 'echo $B | export B=bbb | cat'
+exec_test 'export B=bbb | echo $B | cat -e'
+exec_test 'echo $B | export B=bbb | cat -e'
 
 # variable expansion is before redirection
-# exec_test 'export C=ccc ; echo $C > $C ; cat $C'
+exec_test 'export C=ccc ; echo $C > $C ; cat $C ; rm $C'
+exec_test "export ECHO='echo what > what.txt' ; \$ECHO"
+exec_test "export ECHO='echo what > what.txt' ; \$ECHO > what.txt ; cat what.txt"
 
 # variable expansion is before word
-# exec_test 'export ECHO=echo ; export CAT=cat ; \$ECHO \$CAT | \$CAT'
-
+exec_test 'export ECHO=echo ; export CAT=cat ; $ECHO $CAT | $CAT'
 
 # variable expansion as special characters
 
-# PIPE='|' ; echo $PIPE ; echo PIPE $PIPE cat
+exec_test "export PIPE='|' ; echo \$PIPE ; echo PIPE \$PIPE cat"
+exec_test "export PIPE='|' ; export GREATER='>' ; export CAT=cat ; echo \$PIPE | \$CAT ; echo \$PIPE \$GREATER wow | \$CAT"
+exec_test "export ECHO='echo hello world' ; \$ECHO ; echo \$ECHO"
+exec_test "export ECHO=\"echo hello | cat | wc\" ; \$ECHO ; echo \$ECHO"
+exec_test "export CAT=cat ; echo hello | \$CAT"
+exec_test "export CAT='cat -e' ; echo hello | \$CAT"
+exec_test "export CAT='cat -e | wc' ; echo \$CAT"
+exec_test "export CAT='cat -e | wc' ; \$CAT"
+exec_test "echo what > what.txt ; export CAT='cat what.txt' ; \$CAT ; rm what.txt"
+exec_test "export ECHO='echo hello > what.txt ; cat what.txt' ; \$ECHO"
 
-# PIPE='|' ; GREATER='>' ; CAT=cat ; echo $PIPE | $CAT ; echo $PIPE | $CAT $GREATER wow ; cat wow ; rm wow
+# Builtins
+# exec_test 'pwd ; cd .. | pwd'
 
-# ECHO='echo hello world' ; $ECHO ; echo $ECHO
-# ECHO="echo hello | cat | wc" ; $ECHO ; echo $ECHO
 
-# echo hello | cat
-# CAT=cat ; echo hello | $CAT
-# CAT='cat -e' ; echo hello | $CAT
-# CAT='cat -e | wc' ; echo $CAT
-# CAT='cat -e | wc' ; $CAT
-# CAT='cat -e | wc' ; echo hello | $CAT
-# CAT='cat -e ; echo what ; $CAT'
-# echo what > what.txt ; CAT='cat what.txt' ; $CAT ; rm what.txt
-# CAT='cat $CAT' ; $CAT
-
-# ECHO='echo hello > what.txt ; cat what.txt' ; $ECHO
-
-# variables expansion should be after redirection
-# ECHO='echo what > what.txt' ; $ECHO
-# ECHO='echo what > what.txt' ; $ECHO > what.txt ; cat what.txt
-
-# WOW='hello world' ; cat aaa$WOW ; cat "aaa$WOW" ; cat 'aaa$WOW'
-
+# Misc
+exec_test 'cat /dev/random | head -c 100 | wc -c'
 
 # Tilda Expansion (optional?)
 
@@ -369,11 +373,4 @@ exec_test "echo aaa\$USER\"\$ZXY\"\$ZXY"
 #exec_test 'echo ~/ /'
 #exec_test 'ls ~'
 #exec_test 'ls ~'
-
-# Builtins
-# exec_test 'pwd ; cd .. | pwd'
-
-# Misc
-exec_test 'cat /dev/random | head -c 100 | wc -c'
-
 

@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/28 12:12:16 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/01/31 12:52:13 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 14:57:15 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,52 @@
 #include "libft/libft.h"
 
 extern char		**environ;
-extern t_env	*g_env;
+
+int		ft_env(char *argv[], char **err)
+{
+	t_env	*e;
+	char	*line;
+
+	if (ft_strslen(argv) != 1)
+	{
+		ft_stradd(err, "minishell: env: too many arguments\n");
+		return (1);
+	}
+
+	e = g_env;
+	while (e)
+	{
+		if (e->value)
+		{
+			line = env_join_name_value(e);
+			env_print(line, 0);
+			free(line);
+		}
+		e = e->next;
+	}
+	return (0);
+}
+
+void	env_print(char *str, int quote)
+{
+	char	*p;
+
+	p = strchr(str, '=');
+	if (p)
+	{
+		write(1, str, p++ - str);
+		write(1, "=", 2);
+		write(1, "\"", quote);
+		write(1, p, ft_strlen(p));
+		write(1, "\"", quote);
+		write(1, "\n", 2);
+	}
+	else
+	{
+		write(1, str, ft_strlen(str));
+		write(1, "\n", 1);
+	}
+}
 
 int			env_size(t_env *env)
 {
@@ -75,18 +120,23 @@ char		*env_join_name_value(t_env *env)
 	return (str);
 }
 
-char		**env_make_envp(int isexport)
+char		**env_make_envp(t_env *e, int isexport)
 {
 	char	**envp;
 	int		i;
 	t_env	*current;
 
-	if (!(envp = malloc(sizeof(char *) * (env_size(g_env) + 1))))
+	if (!(envp = malloc(sizeof(char *) * (env_size(e) + 1))))
 		return (NULL);
 	i = 0;
-	current = g_env;
+	current = e;
 	while (current)
 	{
+		if (ft_strcmp(current->name, "_") == 0)
+		{
+			current = current->next;
+			continue ;
+		}
 		if (current->value || isexport)
 			if (!(envp[i++] = env_join_name_value(current)))
 				return (ft_teardown(envp, i));
@@ -150,6 +200,31 @@ void	env_set(t_env **e, t_env *new)
 		env_set_existing(tmp, new);
 	else
 		tmp->next = new;
+}
+
+void	env_unset(t_env **ep, char *name)
+{
+	t_env	*e;
+	t_env	*prev;
+
+	if (ep == NULL || name == NULL)
+		return ;
+	e = *ep;
+	prev = NULL;
+	while (e)
+	{
+		if (ft_strcmp(e->name, name) == 0)
+		{
+			if (prev)
+				prev->next = e->next;
+			else
+				*ep = NULL;
+			env_free(e);
+			return ;
+		}
+		prev = e;
+		e = e->next;
+	}
 }
 
 t_env	*env_make_new(char *name, char *value)
@@ -220,7 +295,7 @@ t_env	*env_init(void)
 	head = NULL;
 	while (environ[i])
 	{
-		if (ft_strncmp(environ[i], "OLDPWD=", 7) == 0)
+		if (ft_strcmp(env_split_name(environ[i]), "OLDPWD") == 0)
 			i++;
 		else
 			env_set(&head, env_new(environ[i++]));

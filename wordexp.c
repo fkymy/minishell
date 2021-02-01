@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/26 20:11:14 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/31 19:22:18 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,9 +92,9 @@ char	*build_envkey_shift(char **p)
 
 char	*expand(char *str, t_vector *v)
 {
-	extern char	**environ;
-	char		*envkey;
-	int			i;
+	char	**envp = env_make_envp(g_env, 0);
+	char	*envkey;
+	int		i;
 
 	if (*str != '$')
 		return (str);
@@ -111,12 +111,12 @@ char	*expand(char *str, t_vector *v)
 	++str;
 	envkey = build_envkey_shift(&str);
 	i = 0;
-	while (environ[i]
-			&& ft_strncmp(environ[i], envkey, ft_strlen(envkey)))
+	while (envp[i] && ft_strncmp(envp[i], envkey, ft_strlen(envkey)))
 		i++;
-	if (environ[i])
-		vector_appends(v, environ[i] + ft_strlen(envkey));
+	if (envp[i])
+		vector_appends(v, envp[i] + ft_strlen(envkey));
 	free(envkey);
+	ft_split_free_null(envp);
 	return (str);
 }
 
@@ -197,8 +197,7 @@ char	*handle_expansion(char *word, t_wordexp *w)
 	word = expand(word, &v);
 	if (v.data == NULL)
 		return (word);
-	vector_append(&v, '\0');
-	fields = ft_split(v.data, ' ');
+	fields = ft_split(vector_gets(&v), ' ');
 	free(v.data);
 	if (w->offset)
 		wordexp_join_arg(w, fields[0]);
@@ -206,7 +205,7 @@ char	*handle_expansion(char *word, t_wordexp *w)
 		wordexp_append_arg(w, fields[0]);
 	i = 1;
 	while (i < ft_strslen(fields))
-		wordexp_append_arg(w, fields[i]);
+		wordexp_append_arg(w, fields[i++]);
 	free(fields);
 	return (word);
 }
