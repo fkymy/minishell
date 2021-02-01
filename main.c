@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 18:45:57 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 19:18:09 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,6 @@ char	**process_words(char *argv[])
 	w.wordv = NULL;
 
 	i = 0;
-	argv = handle_redir(argv);
 	while (argv[i])
 	{
 		w.offset = 0;
@@ -139,23 +138,36 @@ int			is_builtin(char *word)
 
 typedef int	(*t_builtin)(char **, char **, char **);
 
-int			exec_builtin(char *argv[], pid_t pid)
+int			exec_builtin(t_command *c, pid_t pid)
 {
-	// handle redirections
-	(void)pid;
+	int	ret;
+	int	in;
+	int	out;
 
-	if (ft_strcmp(argv[0], "export") == 0)
-		return (ft_export(argv));
-	if (ft_strcmp(argv[0], "unset") == 0)
-		return (ft_unset(argv));
-	if (ft_strcmp(argv[0], "env") == 0)
-		return (ft_env(argv));
-	if (ft_strcmp(argv[0], "exit") == 0)
-		return (ft_exit(argv));
-	return (-1);
+	in = -1;
+	out = -1;
+	if (pid == -1)
+	{
+		c->argv = handle_redir(c->argv, &in, &out);
+		c->argv = process_words(c->argv);
+	}
+	ret = 1;
+	if (ft_strcmp(c->argv[0], "export") == 0)
+		ret = ft_export(c->argv);
+	if (ft_strcmp(c->argv[0], "unset") == 0)
+		ret = ft_unset(c->argv);
+	if (ft_strcmp(c->argv[0], "env") == 0)
+		ret = ft_env(c->argv);
+	if (ft_strcmp(c->argv[0], "exit") == 0)
+		ret = ft_exit(c->argv);
+	if (in != -1)
+		dup2(in, 0);
+	if (out != -1)
+		dup2(out, 1);
+	return (ret);
 }
 
-pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
+pid_t		start_command(t_command *c, int ispipe, int haspipe, int lastpipe[2])
 {
 	pid_t		pid;
 	int			newpipe[2];
@@ -185,18 +197,19 @@ pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 			close(newpipe[1]);
 		}
 
-		argv = process_words(argv);
+		c->argv = handle_redir(c->argv, NULL, NULL);
+		c->argv = process_words(c->argv);
 
-		if (is_builtin(argv[0]))
-			exit(exec_builtin(argv, pid));
+		if (is_builtin(c->argv[0]))
+			exit(exec_builtin(c, pid));
 
 		envp = env_make_envp(g_env, 0);
-		if (!(pathname = is_cmd_exist(g_path, argv[0])))
+		if (!(pathname = is_cmd_exist(g_path, c->argv[0])))
 		{
 			ft_putstr_fd("minishell: command not found\n", 2);
 			exit(127);
 		}
-		if (execve(pathname, argv, envp) < 0)
+		if (execve(pathname, c->argv, envp) < 0)
 		{
 			perror("failed to execve");
 			_exit(1);
@@ -227,19 +240,7 @@ t_command	*do_pipeline(t_command *c)
 	while (c)
 	{
 		ispipe = c->op == OP_PIPE ? 1 : 0;
-
-		/* if (!is_cmd_exist(g_path, c->argv[0]) && !is_builtin(c->argv[0])) */
-		/* { */
-		/* 	ft_putstr_fd("minishell: command not found\n", 2); */
-		/* 	g_exit_status = 127; */
-		/* 	if (!c->next) */
-		/* 		break ; */
-		/* 	c = c->next; */
-		/* 	continue ; */
-		/* } */
-
-		// set _ env to pathname?
-		c->pid = start_command(c->argv, ispipe, haspipe, lastpipe);
+		c->pid = start_command(c, ispipe, haspipe, lastpipe);
 		haspipe = ispipe;
 		if (ispipe && c->next)
 			c = c->next;
@@ -260,7 +261,8 @@ void	run_list(t_command *c)
 	{
 		if (is_builtin(c->argv[0]) && c->op != OP_PIPE)
 		{
-			exec_builtin(c->argv, c->pid);
+			ft_putstr_fd("is builtin out of pipeline!\n", 2);
+			exec_builtin(c, c->pid);
 			c = c->next;
 			continue ;
 		}

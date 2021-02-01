@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:14:27 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/24 20:07:15 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 19:15:58 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include "libft/libft.h"
 #include "minishell.h"
 
-char	**handle_redir(char **argv)
+char	**handle_redir(char **argv, int *in, int *out)
 {
 	int		i;
 	int		j;
@@ -49,6 +49,10 @@ char	**handle_redir(char **argv)
 
 		if (ft_strcmp(argv[i], "<") == 0)
 		{
+			if (in != NULL)
+			{
+				*in = dup(0);
+			}
 			fd = open(*word, O_RDONLY);
 			if (fd == -1)
 				die(strerror(errno));
@@ -60,6 +64,10 @@ char	**handle_redir(char **argv)
 		}
 		else if (ft_strcmp(argv[i], ">") == 0)
 		{
+			if (out != NULL)
+			{
+				*out = dup(1);
+			}
 			fd = open(*word, O_WRONLY|O_CREAT|O_TRUNC, 0666);
 			if (fd == -1)
 				die(strerror(errno));
@@ -71,6 +79,10 @@ char	**handle_redir(char **argv)
 		}
 		else if (ft_strcmp(argv[i], ">>") == 0)
 		{
+			if (out != NULL)
+			{
+				*out = dup(1);
+			}
 			fd = open(*word, O_WRONLY|O_CREAT|O_APPEND, 0666);
 			if (fd == -1)
 				die(strerror(errno));

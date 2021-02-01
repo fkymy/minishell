@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 16:06:13 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/01 18:53:08 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ int				parse(char *commandline, t_command **c);
 int				isredir(char *str);
 
 /* redir.c */
-char			**handle_redir(char **argv);
+char			**handle_redir(char **argv, int *in, int *out);
 
 /* wordexp.c */
 typedef struct	s_wordexp
