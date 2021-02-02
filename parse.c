@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/21 17:47:51 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/29 18:53:09 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/01/31 20:15:41 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,5 +98,12 @@ int			parse(char *commandline, t_command **c)
 		die("token failed");
 	if (current->argc && !current->op)
 		return (set_operator(current, TOKEN_SEPARATOR));
+	// check list
+	/* if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL) */
+	/* { */
+	/* 	ft_putstr_fd("Error: invalid command in list.\n", 2); */
+	/* 	c = c->next; */
+	/* 	continue ; */
+	/* } */
 	return (0);
 }

@@ -6,12 +6,18 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/31 11:39:16 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 17:08:29 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+
+/* builtins */
+int				ft_exit(char *argv[]);
+int				ft_export(char *argv[]);
+int				ft_unset(char *argv[]);
+int				ft_env(char *argv[]);
 
 /* get_next_commandline.c */
 int				get_next_commandline(int fd, char **line);
@@ -69,7 +75,7 @@ int				parse(char *commandline, t_command **c);
 int				isredir(char *str);
 
 /* redir.c */
-char			**handle_redir(char **argv);
+char			**handle_redir(char **argv, int *in, int *out);
 
 /* wordexp.c */
 typedef struct	s_wordexp
@@ -82,6 +88,13 @@ typedef struct	s_wordexp
 int				wordexp(char *word, t_wordexp *w);
 char			**wordexp_wrap(char *word);
 
+void			wordexp_join_arg(t_wordexp *w, char *s);
+int				wordexp_append_arg(t_wordexp *w, char *word);
+
+char			*shift_quotes(char *word, t_wordexp *w);
+char			*shift_expansion(char *word, t_wordexp *w);
+char			*expand(char *str, t_vector *v);
+
 /* env.c */
 typedef struct		s_env {
 	struct s_env	*next;
@@ -89,15 +102,24 @@ typedef struct		s_env {
 	char			*value;
 }					t_env;
 
+extern t_env	*g_env;
 t_env			*env_init(void);
+t_env			*env_new(char *str);
 t_env			*env_get(t_env *e, char *name);
+void			env_set(t_env **e, t_env *new);
+void			env_unset(t_env **ep, char *name);
+char			**env_make_envp(t_env *e, int isexport);
+char			*env_split_name(char *str);
+void			env_print(char *str, int quote);
+
+char			*env_join_name_value(t_env *env);
 
 /* main.c */
 extern int		g_exit_status;
 void			die(char *msg);
 
 /* signal.c */
-volatile sig_atomic_t	g_interrupt; // volatile?
+volatile sig_atomic_t	g_interrupt;
 void					handler(int signum);
 void					set_signal_handler(void (*func)(int));
 

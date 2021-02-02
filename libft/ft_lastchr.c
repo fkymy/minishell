@@ -1,25 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strslen.c                                       :+:      :+:    :+:   */
+/*   ft_lastchr.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/01/24 18:23:47 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/31 14:42:36 by yufukuya         ###   ########.fr       */
+/*   Created: 2021/02/02 17:09:16 by yufukuya          #+#    #+#             */
+/*   Updated: 2021/02/02 17:09:48 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-size_t	ft_strslen(char **s)
+char	ft_last_chr(char *s)
 {
 	int	i;
 
-	if (s == NULL)
+	if (!s)
 		return (0);
-	i = 0;
-	while (s[i])
-		++i;
-	return (i);
+	i = ft_strlen(s);
+	if (i == 0)
+		return (s[0]);
+	return (s[i - 1]);
 }

@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/01/31 12:54:36 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 14:52:12 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ typedef struct stat	t_stat;
 ** Globals
 */
 
-int		g_exit_status = 0;
+int		g_exit_status;
 char	**g_path;
 t_env	*g_env;
 
@@ -50,7 +50,7 @@ int		is_cmd_builtins(char *cmd)
 	int i;
 	char **builtins;
 
-	builtins = ft_split("echo cd pwd export unset env exit", ' ');
+	builtins = ft_split("export", ' ');
 	if (!builtins)
 		die(strerror(errno));
 	i = 0;
@@ -98,11 +98,11 @@ char	**process_words(char *argv[])
 	t_wordexp	w;
 	size_t		i;
 
+	if (!argv)
+		return (NULL);
 	w.wordc = 0;
 	w.wordv = NULL;
-
 	i = 0;
-	argv = handle_redir(argv);
 	while (argv[i])
 	{
 		w.offset = 0;
@@ -114,11 +114,68 @@ char	**process_words(char *argv[])
 	return (w.wordv);
 }
 
-pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
+int			is_builtin(char *word)
 {
-	extern char	**environ;
+	int			ret;
+	char		**exp;
+	int			i;
+	const char	*builtins[] = {
+		"export", "unset", "env", "exit",
+		NULL
+	};
+
+	ret = 0;
+	exp = wordexp_wrap(word);
+	i = -1;
+	while (builtins[++i])
+		if (ft_strcmp(builtins[i], *exp) == 0)
+		{
+			ret = 1;
+			break ;
+		}
+	ft_split_free_null(exp);
+	return (ret);
+}
+
+typedef int	(*t_builtin)(char **, char **, char **);
+
+int			exec_builtin(char *argv[])
+{
+	if (ft_strcmp(argv[0], "export") == 0)
+		return (ft_export(argv));
+	if (ft_strcmp(argv[0], "unset") == 0)
+		return (ft_unset(argv));
+	if (ft_strcmp(argv[0], "env") == 0)
+		return (ft_env(argv));
+	if (ft_strcmp(argv[0], "exit") == 0)
+		return (ft_exit(argv));
+	return (-1);
+}
+
+int			exec_builtin_parent(t_command *c)
+{
+	int	ret;
+	int	in;
+	int	out;
+
+	in = -1;
+	out = -1;
+	c->argv = handle_redir(c->argv, &in, &out);
+	c->argv = process_words(c->argv);
+	ret = exec_builtin(c->argv);
+	if (in != -1)
+		dup2(in, 0);
+	if (out != -1)
+		dup2(out, 1);
+	return (ret);
+}
+
+pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
+{
 	pid_t		pid;
 	int			newpipe[2];
+	char		**envp;
+	char		*pathname;
 
 	if (ispipe)
 		pipe(newpipe);
@@ -143,8 +200,21 @@ pid_t	start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 			close(newpipe[1]);
 		}
 
+		argv = handle_redir(argv, NULL, NULL);
 		argv = process_words(argv);
-		if (execve(is_cmd_exist(g_path, argv[0]), argv, environ) < 0)
+		if (argv == NULL)
+			exit(0);
+
+		if (is_builtin(argv[0]))
+			exit(exec_builtin(argv));
+
+		envp = env_make_envp(g_env, 0);
+		if (!(pathname = is_cmd_exist(g_path, argv[0])))
+		{
+			ft_putstr_fd("minishell: command not found\n", 2);
+			exit(127);
+		}
+		if (execve(pathname, argv, envp) < 0)
 		{
 			perror("failed to execve");
 			_exit(1);
@@ -174,7 +244,7 @@ t_command	*do_pipeline(t_command *c)
 
 	while (c)
 	{
-		ispipe = c->op == TOKEN_PIPE ? 1 : 0;
+		ispipe = c->op == OP_PIPE ? 1 : 0;
 		c->pid = start_command(c->argv, ispipe, haspipe, lastpipe);
 		haspipe = ispipe;
 		if (ispipe && c->next)
@@ -194,52 +264,38 @@ void	run_list(t_command *c)
 
 	while (c)
 	{
-		if (c->op == -1 || !c->argv || c->argv[c->argc] != NULL)
+		if (is_builtin(c->argv[0]) && c->op != OP_PIPE)
 		{
-			ft_putstr_fd("Error: invalid command in list.\n", 2);
-			c = c->next;
-			continue ;
-		}
-
-		if (is_cmd_builtins(c->argv[0]) && !is_cmd_exist(g_path, c->argv[0]))
-		{
-			ft_putstr_fd("command not found\n", 2);
-			c = c->next;
-			continue ;
-		}
-		if (ft_strcmp(c->argv[0], "exit") == 0)
-			exit(0);
-		if (ft_strcmp(c->argv[0], "cd") == 0)
-		{
-			if (chdir(c->argv[1]) < 0)
-				ft_putstr_fd(strerror(errno), 2);
+			if ((g_exit_status = exec_builtin_parent(c)) < 0)
+				die("exec builtin failed.");
 			c = c->next;
 			continue ;
 		}
 		c = do_pipeline(c);
-		exited_pid = waitpid(c->pid, &status, 0);
-		if (WIFEXITED(status))
+		if (c->pid != -1)
 		{
-			/* exit statusの記録、処理 */
-		}
-		else if (WIFSIGNALED(status))
-		{
-			if (WTERMSIG(status) == SIGQUIT)
-				ft_putstr_fd("Quit: 3\n", 2);
+			exited_pid = waitpid(c->pid, &status, 0);
+			assert(exited_pid == c->pid);
+			if (WIFEXITED(status))
+			{
+				g_exit_status = WEXITSTATUS(status);
+			}
+			else if (WIFSIGNALED(status))
+			{
+				if (WTERMSIG(status) == SIGQUIT)
+					ft_putstr_fd("Quit: 3\n", 2);
+				else
+					ft_putstr_fd("\n", 2);
+			}
 			else
-				ft_putstr_fd("\n", 2);
+				die("child exited abnormally");
+			while (wait(NULL) > 0);
 		}
-		assert(exited_pid == c->pid);
-		if (WIFEXITED(status))
-			g_exit_status = WEXITSTATUS(status);
-		else
-			die("child exited abnormally");
-		while (wait(NULL) > 0);
 		c = c->next;
 	}
 }
 
-int			main(int argc, char *argv[], char *envp[])
+int			main(int argc, char *argv[])
 {
 	char		*commandline;
 	t_command	*c;
@@ -247,10 +303,10 @@ int			main(int argc, char *argv[], char *envp[])
 	int			needprompt;
 
 	(void)argv;
-	(void)envp;
 	if (argc != 1)
 		return (42);
 
+	g_exit_status = 0;
 	g_env = env_init();
 	if (!(g_path = ft_split(env_get(g_env, "PATH")->value, ':')))
 		die(strerror(errno));
@@ -265,7 +321,6 @@ int			main(int argc, char *argv[], char *envp[])
 			ft_putstr_fd("minishell>", 2);
 			needprompt = 0;
 		}
-
 		ret = get_next_commandline(0, &commandline);
 		if (ret < 0)
 			die("gnc failed.");
@@ -279,7 +334,10 @@ int			main(int argc, char *argv[], char *envp[])
 		if (ret == 1)
 		{
 			if (parse(commandline, &c) < 0)
+			{
 				ft_putstr_fd("minishell: syntax error\n", 2);
+				g_exit_status = 2;
+			}
 			else if (c->argc)
 				run_list(c);
 			free(commandline);
