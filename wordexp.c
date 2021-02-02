@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 18:01:18 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 14:38:17 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,7 +140,7 @@ int		is_double_quote_escapable(int c)
 
 char	*unquote_double(char *str, t_vector *v)
 {
-	int escaped;
+	int	escaped;
 
 	if (*str != '\"')
 		return (str);
@@ -167,33 +167,35 @@ char	*unquote_double(char *str, t_vector *v)
 	return (str);
 }
 
-char	*handle_quotes(char *word, t_wordexp *w)
+char	*shift_quotes(char *word, t_wordexp *w)
 {
 	t_vector	v;
 
 	vector_initialize(&v);
-	if (*word == '\'')
-		word = unquote_single(word, &v);
-	else if (*word == '\"')
-		word = unquote_double(word, &v);
-	vector_append(&v, '\0');
+	while (*word == '\'' || *word == '\"')
+	{
+		if (*word == '\'')
+			word = unquote_single(word, &v);
+		else if (*word == '\"')
+			word = unquote_double(word, &v);
+		word++;
+	}
 	if (w->offset)
-		wordexp_join_arg(w, v.data);
+		wordexp_join_arg(w, vector_gets(&v));
 	else
-		wordexp_append_arg(w, v.data);
-	++word;
+		wordexp_append_arg(w, vector_gets(&v));
 	return (word);
 }
 
-char	*handle_expansion(char *word, t_wordexp *w)
+char	*shift_expansion(char *word, t_wordexp *w)
 {
 	t_vector	v;
-	size_t			i;
-	char			**fields;
+	size_t		i;
+	char		**fields;
 
 	vector_initialize(&v);
 	if (word[1] == '\"')
-		return (handle_quotes(word + 1, w));
+		return (shift_quotes(word + 1, w));
 	word = expand(word, &v);
 	if (v.data == NULL)
 		return (word);
@@ -210,9 +212,9 @@ char	*handle_expansion(char *word, t_wordexp *w)
 	return (word);
 }
 
-char	*handle_word(char *word, t_wordexp *w)
+char	*shift_word(char *word, t_wordexp *w)
 {
-	t_vector v;
+	t_vector	v;
 
 	vector_initialize(&v);
 	while (*word && *word != '\'' && *word != '\"' && *word != '$')
@@ -220,11 +222,10 @@ char	*handle_word(char *word, t_wordexp *w)
 		vector_append(&v, *word);
 		++word;
 	}
-	vector_append(&v, '\0');
 	if (w->offset)
-		wordexp_join_arg(w, v.data);
+		wordexp_join_arg(w, vector_gets(&v));
 	else
-		wordexp_append_arg(w, v.data);
+		wordexp_append_arg(w, vector_gets(&v));
 	return (word);
 }
 
@@ -235,18 +236,18 @@ int		wordexp(char *word, t_wordexp *w)
 	while (*word)
 	{
 		if ((*word == '\'' || *word == '\"'))
-			word = handle_quotes(word, w);
+			word = shift_quotes(word, w);
 		else if (*word == '$')
-			word = handle_expansion(word, w);
+			word = shift_expansion(word, w);
 		else
-			word = handle_word(word, w);
+			word = shift_word(word, w);
 	}
 	return (0);
 }
 
 char	**wordexp_wrap(char *word)
 {
-	t_wordexp w;
+	t_wordexp	w;
 
 	w.wordc = 0;
 	w.wordv = NULL;

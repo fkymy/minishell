@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 13:55:04 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 14:52:12 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,9 +98,10 @@ char	**process_words(char *argv[])
 	t_wordexp	w;
 	size_t		i;
 
+	if (!argv)
+		return (NULL);
 	w.wordc = 0;
 	w.wordv = NULL;
-
 	i = 0;
 	while (argv[i])
 	{
@@ -201,6 +202,8 @@ pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 
 		argv = handle_redir(argv, NULL, NULL);
 		argv = process_words(argv);
+		if (argv == NULL)
+			exit(0);
 
 		if (is_builtin(argv[0]))
 			exit(exec_builtin(argv));

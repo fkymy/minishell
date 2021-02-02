@@ -232,10 +232,10 @@ exec_test 'ls | wc | wc ; echo test | wc'
 ### Redirections
 
 # redirection should work without command
-exec_test '>what ; file what; rm what'
-exec_test '> echo ; file echo ; rm echo'
-exec_test '>> echo ; file echo ; rm echo'
-exec_test '< echo'
+exec_test '>what ; echo $? ; file what; rm what'
+exec_test '> echo ; echo $?; file echo ; rm echo'
+exec_test '>> echo ; echo $? ; file echo ; rm echo'
+exec_test '< echo ; echo $?'
 exec_test_with_files '<test1.txt'
 exec_test_with_files '<test1.txt<test2.txt<test3.txt<test4.txt'
 
@@ -299,6 +299,8 @@ exec_test "echo '' | cat -e"
 exec_test "echo '''''' | cat -e"
 exec_test "echo \"\" | cat -e"
 exec_test "echo \"\"\"\"\"\" | cat -e"
+exec_test "echo '' '' ''   ''"
+exec_test "echo \" \" \"\" \"\"  \"\""
 
 # quotes should work empty
 exec_test "ls'''''' | cat -e"

@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:14:27 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 19:15:58 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 14:45:59 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ char	**handle_redir(char **argv, int *in, int *out)
 	int		argc;
 	char	**newargv;
 
+	if (!argv)
+		return (NULL);
 	argc = 0;
 	while (argv[argc])
 		argc++;
