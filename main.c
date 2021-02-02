@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 19:26:41 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 13:55:04 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,7 +148,7 @@ int			exec_builtin(char *argv[])
 		return (ft_env(argv));
 	if (ft_strcmp(argv[0], "exit") == 0)
 		return (ft_exit(argv));
-	return (1);
+	return (-1);
 }
 
 int			exec_builtin_parent(t_command *c)
@@ -263,15 +263,14 @@ void	run_list(t_command *c)
 	{
 		if (is_builtin(c->argv[0]) && c->op != OP_PIPE)
 		{
-			ft_putstr_fd("is builtin out of pipeline!\n", 2);
-			exec_builtin_parent(c);
+			if ((g_exit_status = exec_builtin_parent(c)) < 0)
+				die("exec builtin failed.");
 			c = c->next;
 			continue ;
 		}
 		c = do_pipeline(c);
 		if (c->pid != -1)
 		{
-			ft_putstr_fd("do_pipeline returned pid\n", 2);
 			exited_pid = waitpid(c->pid, &status, 0);
 			assert(exited_pid == c->pid);
 			if (WIFEXITED(status))
@@ -332,7 +331,10 @@ int			main(int argc, char *argv[])
 		if (ret == 1)
 		{
 			if (parse(commandline, &c) < 0)
+			{
 				ft_putstr_fd("minishell: syntax error\n", 2);
+				g_exit_status = 2;
+			}
 			else if (c->argc)
 				run_list(c);
 			free(commandline);

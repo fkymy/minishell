@@ -106,13 +106,11 @@ function exec_test()
 	sleep 0.1
 }
 
-# Mandatory Part
+### Mandatory Part
 echo > results.txt ;
 
-# Builtins
-exec_test 'export'
 
-# Syntax error
+### Syntax error
 # exec_test ';'
 # exec_test '|'
 # exec_test '<'
@@ -129,50 +127,117 @@ exec_test 'export'
 # exec_test 'echo hello >> ;'
 # exec_test 'cat < |'
 # exec_test 'cat < ;'
-
-# Commnad not found
-exec_test 'unknowncommand'
-exec_test 'unknowncommand ; commandunknown'
-exec_test 'unknowncommand | commandunknown'
-exec_test 'unknowncommand > nani ; file nani ; rm nani'
-exec_test 'asdfas | echo hello | echo world > WORLD | asdfas ; file WORLD; rm WORLD'
-
-# ; Separator
-exec_test 'echo hello'
-exec_test 'echo hello world'
-exec_test 'echo hello ; echo world'
-exec_test 'echo hello ; echo world'
-exec_test 'echo 01234567890123456789 ; echo ; echo ; echo'
-
-# | Pipe
-exec_test 'ls | wc | wc'
-exec_test 'ls | wc | wc ; echo test'
-exec_test 'ls | wc | wc ; echo test | wc'
-# exec_test 'sleep 1 | echo 1 ; sleep 2 | echo 2'
-
-# unknown|
-
-# > < >> Redirection
-
-# redirection op without file should be syntax error
 # exec_test 'echo hello > '
 # exec_test 'echo hello >'
 # exec_test 'echo hello >>'
 # exec_test 'cat <'
 # exec_test 'cat < '
-
 # exec_test_with_files 'echo hello > > test1.txt'
 # exec_test_with_files 'echo hello >> >> test1.txt'
 # exec_test_with_files 'echo hello > >> test1.txt'
 # exec_test_with_files 'echo hello > < test1.txt'
 # exec_test_with_files 'cat < < test1.txt'
 
+
+### Commnad not found (127)
+exec_test 'unknowncommand'
+exec_test 'unknowncommand ; commandunknown'
+exec_test 'unknowncommand | commandunknown'
+exec_test 'unknowncommand > nani ; file nani ; rm nani'
+exec_test 'asdfas | echo hello | echo world > WORLD | asdfas ; file WORLD; rm WORLD'
+
+### Command not executable (126)
+exec_test "echo 'echo hello'>a ; ./a; echo \$?;chmod +x a; ./a; echo \$? ; rm a"
+
+### Absolute path
+
+
+### Relative path
+
+
+### Builtins
+
+# weird
+# exec_test 'pwd ; cd .. | pwd'
+
+# echo
+# exec_test 'echo $_ | echo $_ ; echo $_'
+# exec_test 'echo $_ | echo $_ ; echo $_ ; echo $_'
+# exec_test 'echo 1 2 3 ; echo $_ ; echo $_'
+
+# export unset
+# exec_test 'export'
+# exec_test 'export > /dev/null 2>&1 ; echo $?'
+# exec_test 'export -f > /dev/null 2>&1 ; echo $? ; export -n > /dev/null 2>&1 ; echo $?'
+# exec_test "env | wc > /dev/null 2>&1"
+# exec_test "env > /dev/null 2>&1; echo \$? ; env > env.txt ; echo \$?; cat env.txt | wc > /dev/null 2>&1; echo \$? ; rm env.txt"
+# exec_test "env -i > /dev/null 2>&1; echo \$?"
+# exec_test "env name=value > /dev/null 2>&1; echo \$?"
+
+exec_test "export _A=aaa ; echo \$_A \"\$_A\" '\$_A' ; unset _A ; echo \$_A"
+exec_test 'export AB912__2asdvb_ ; export | grep AB912 | cat | wc ; unset AB91 ; export | grep AB912 ; unset AB912__2asdvb_ ; export | grep AB912'
+exec_test "export ___A=aaa ___b=bbb ___C=ccc ___ddd='ddd ddd ddd' ___f=  ___g ___A=a ; export | grep ___"
+exec_test "export A ; export A= ; export A='hello' ; export A='world' ; export A=\"hello world\" ; echo \$A"
+exec_test "export A ; echo \$? ; export A= ; echo \$? ; export A=aaa ; echo \$?"
+exec_test "export HELLO ; unset HELLO ; echo \$? ; unset HELLO ; echo \$? ; export HELLO= ; unset HELLO ; echo \$?"
+exec_test 'unset ; echo $?'
+exec_test 'export _A=aaa | echo $_A "$_A" ; echo $_B | export _B=bbb '
+
+exec_test "echo 'export _A=aaa'>export.txt;export < export.txt|grep _A ; echo \$? ; rm export.txt"
+
+# env
+exec_test "export _ABC ; env | grep _ABC ; export _DEF= ; env | grep _DEF ; export _GHI='hello there' ; env | grep _GHI"
+
+# exit
+exec_test 'exit 0'
+exec_test 'exit -1'
+exec_test 'exit -0'
+exec_test 'exit ----21'
+exec_test 'exit --++-+-21'
+exec_test 'exit 255'
+exec_test 'exit exit'
+exec_test 'exit what ; echo $?'
+exec_test 'exit 00000000'
+exec_test 'echo | exit > exit.txt ; file exit.txt ; rm exit.txt'
+exec_test 'echo 9 > exit.txt ; exit < exit.txt | cat ; rm exit.txt '
+
+exec_test 'echo | exit 99 ; echo $?'
+exec_test 'echo | exit 42 | exit 21 ; echo $?'
+exec_test 'echo | exit 999999999999999999 ; echo $?'
+exec_test 'echo | exit -12345 ; echo $?'
+exec_test 'echo | exit 0 ; echo $?'
+exec_test 'echo 123 | exit ; echo $?'
+exec_test 'echo -123 | exit ; echo $?'
+
+# builtins should work in pipe
+
+# builtins should work with redirections
+
+
+### ; Separator
+exec_test 'echo hello'
+exec_test 'echo hello world'
+exec_test 'echo hello ; echo world'
+exec_test 'echo hello ; echo world'
+exec_test 'echo 01234567890123456789 ; echo ; echo ; echo'
+
+
+### | Pipe
+exec_test 'ls | wc | wc'
+exec_test 'ls | wc | wc ; echo test'
+exec_test 'ls | wc | wc ; echo test | wc'
+# exec_test 'sleep 1 | echo 1 ; sleep 2 | echo 2'
+
+
+### Redirections
+
 # redirection should work without command
-# exec_test '> echo ; file echo ; rm echo'
-# exec_test '>> echo ; file echo ; rm echo'
-# exec_test '< echo'
-# exec_test_with_files '<test1.txt'
-# exec_test_with_files '<test1.txt<test2.txt<test3.txt<test4.txt'
+exec_test '>what ; file what; rm what'
+exec_test '> echo ; file echo ; rm echo'
+exec_test '>> echo ; file echo ; rm echo'
+exec_test '< echo'
+exec_test_with_files '<test1.txt'
+exec_test_with_files '<test1.txt<test2.txt<test3.txt<test4.txt'
 
 # < redirection shoud fail if file does not exist
 exec_test 'cat < nonexistingfile'
@@ -200,11 +265,8 @@ exec_test_with_files 'echo aaa >> test1.txt >> test2.txt >> test3.txt ; echo bbb
 
 # redirections should work in mix
 exec_test_with_files 'wc < test1.txt < test2.txt > test3.txt > test4.txt < test5.txt > test6.txt'
-
 exec_test_with_files 'cat > test2.txt > test3.txt > test4.txt < test1.txt'
-
 exec_test_with_files 'echo | cat | wc > test.txt < test6.txt ; cat test.txt'
-
 exec_test_with_files 'echo test666666 >> test6.txt | head -n 1 < test6.txt > test1.txt ; wc > test2.txt < test1.txt ; cat test2.txt'
 
 # redirections and pipes
@@ -219,8 +281,11 @@ exec_test "echo hello > aaa\"world\" > \" a b c \"; file aaaworld ; cat \" a b c
 exec_test "echo hello > \$USER ; cat \$USER ; rm \$USER"
 exec_test "echo hello > aaa\$USER\"\$PWD\" ; cat aaa\$USER\"\$PWD\" ; rm aaa\$USER\"\$PWD\""
 
+# redirections should fail when permission denied
+exec_test "echo hello > a; cat < a;chmod -r a; cat < a; rm a"
+exec_test "echo hello > a; cat a;chmod -w a; echo >> a; cat a; rm a"
 
-# Quotes
+### Quotes
 
 # quotes should work in simple use cases
 exec_test "echo hello'world'foo"
@@ -274,12 +339,9 @@ exec_test "echo \"hello USER %* #' @ ^ &* ( @ ! ) there | cat ; wc ; {}|\""
 # double quotes backslash should escape only if followed by $ " \
 exec_test "echo \" hello \;there\2my\0friend\""
 exec_test "echo \" hello \there\my\nfriend\""
-
 exec_test "echo \" \\\" lit\\\"erally \""
 exec_test "echo \" \\\$USER lit\\\$USERerally \""
 exec_test "echo \" \\\\ lit\\\\erally \""
-
-
 exec_test "echo \"\\\$\$USER\""
 
 # double quotes should expand $
@@ -292,7 +354,7 @@ exec_test "echo \"   aaa\$USER bbb\$CWDccc \""
 exec_test "echo \"  \$UNKNOWNVARIABLE  \$_WHATIS_this999 \$_32175891  \$________\""
 
 
-# $?
+### $?
 
 # $? should print exit status
 exec_test 'true ; echo $? ; false ; echo $? ; cat nonexist ; echo $?'
@@ -310,7 +372,7 @@ exec_test 'true ; echo $? | cat | false | echo $?'
 # $? should work in pipes and redirections
 exec_test_with_files "false ; echo \$? > test1.txt > test2.txt ; echo \$? | cat >>test2.txt ; cat test2.txt | echo \$?"
 
-# Expansion
+### Expansion
 
 # dollar sign preceding double quote
 exec_test "echo \$\"\""
@@ -344,7 +406,6 @@ exec_test "export ECHO='echo what > what.txt' ; \$ECHO > what.txt ; cat what.txt
 exec_test 'export ECHO=echo ; export CAT=cat ; $ECHO $CAT | $CAT'
 
 # variable expansion as special characters
-
 exec_test "export PIPE='|' ; echo \$PIPE ; echo PIPE \$PIPE cat"
 exec_test "export PIPE='|' ; export GREATER='>' ; export CAT=cat ; echo \$PIPE | \$CAT ; echo \$PIPE \$GREATER wow | \$CAT"
 exec_test "export ECHO='echo hello world' ; \$ECHO ; echo \$ECHO"
@@ -356,15 +417,15 @@ exec_test "export CAT='cat -e | wc' ; \$CAT"
 exec_test "echo what > what.txt ; export CAT='cat what.txt' ; \$CAT ; rm what.txt"
 exec_test "export ECHO='echo hello > what.txt ; cat what.txt' ; \$ECHO"
 
-# Builtins
-# exec_test 'pwd ; cd .. | pwd'
 
-
-# Misc
+### Misc
 exec_test 'cat /dev/random | head -c 100 | wc -c'
 
-# Tilda Expansion (optional?)
+### Optional
 
+# export _="1 2 3" ; echo $_
+
+# Tilda Expansion (optional?)
 #exec_test 'echo ~'
 #exec_test 'echo ~~'
 #exec_test 'echo ~ ~'

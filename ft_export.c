@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/01 15:32:29 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/01 16:07:56 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 13:24:57 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,5 +99,5 @@ int			ft_export(char *argv[])
 		env_set(&g_env, env_new(argv[i]));
 		i++;
 	}
-	return (error ? 1 : 21);
+	return (error ? 2 : 0);
 }

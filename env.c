@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/28 12:12:16 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/01 20:38:43 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 13:14:23 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int		ft_env(char *argv[])
 	if (ft_strslen(argv) != 1)
 	{
 		ft_putstr_fd("minishell: env: too many arguments\n", 2);
-		return (1);
+		return (2);
 	}
 
 	e = g_env;
