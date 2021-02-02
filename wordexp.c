@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 14:38:17 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 17:07:56 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,26 +17,7 @@
 #include "libft/libft.h"
 #include "minishell.h"
 
-/*
-** Single quote: Preserve literal value of each characters. Single quote cannot be in single quote.
-** Double quote: Preserve literal value of each characters except: backquote, $, \
-**   - $ expands variables
-**   - \ escapes only if followed by $ " \
-**
-** Things that happen after parse:
-** - redirection: redirect and remove operators and operand from param list
-** - expansion: expand parts of command into wordexp-like arguments or splitted argv
-**   - variables in expansion is not expanded
-**   - quotes in expansion is treated literally
-** - unquoting: unquote within same argv[i], expand specials
-**
-** *quotes token shall be unmodified, not delimited during tokenize
-** *$ shall be unmodified, not delimited during tokenize
-*/
-
-// Environment variable names used by the utilities in the Shell and Utilities volume of IEEE Std 1003.1-2001 consist solely of uppercase letters, digits, and the '_' (underscore) from the characters defined in Portable Character Set and do not begin with a digit. Other characters may be permitted by an implementation
-
-static void		wordexp_join_arg(t_wordexp *w, char *s)
+void		wordexp_join_arg(t_wordexp *w, char *s)
 {
 	char	*new_arg;
 
@@ -47,7 +28,7 @@ static void		wordexp_join_arg(t_wordexp *w, char *s)
 	free(s);
 }
 
-static int		wordexp_append_arg(t_wordexp *w, char *word)
+int		wordexp_append_arg(t_wordexp *w, char *word)
 {
 	char	**new_argv;
 	size_t	i;
@@ -69,147 +50,6 @@ static int		wordexp_append_arg(t_wordexp *w, char *word)
 	++w->wordc;
 	w->offset = ft_strlen(word);
 	return (0);
-}
-
-char	*build_envkey_shift(char **p)
-{
-	char	*envkey;
-	int		len;
-	char	*s;
-
-	len = 0;
-	s = *p;
-	while (s[len] && (ft_isalnum(s[len]) || s[len] == '_'))
-		len++;
-	if (!(envkey = malloc(sizeof(char) * (len + 2))))
-		return (NULL);
-	ft_memcpy(envkey, s, len);
-	envkey[len] = '=';
-	envkey[len + 1] = '\0';
-	*p += len;
-	return (envkey);
-}
-
-char	*expand(char *str, t_vector *v)
-{
-	char	**envp = env_make_envp(g_env, 0);
-	char	*envkey;
-	int		i;
-
-	if (*str != '$')
-		return (str);
-	if (str[1] == '?')
-	{
-		vector_appends(v, ft_itoa(g_exit_status));
-		return (str + 2);
-	}
-	if (!ft_isalpha(str[1]) && str[1] != '_')
-	{
-		vector_append(v, *str);
-		return (str + 1);
-	}
-	++str;
-	envkey = build_envkey_shift(&str);
-	i = 0;
-	while (envp[i] && ft_strncmp(envp[i], envkey, ft_strlen(envkey)))
-		i++;
-	if (envp[i])
-		vector_appends(v, envp[i] + ft_strlen(envkey));
-	free(envkey);
-	ft_split_free_null(envp);
-	return (str);
-}
-
-char	*unquote_single(char *str, t_vector *v)
-{
-	if (*str != '\'')
-		return (str);
-	++str;
-	while (*str != '\'')
-	{
-		vector_append(v, *str);
-		++str;
-	}
-	return (str);
-}
-
-int		is_double_quote_escapable(int c)
-{
-	return (c == '$' || c == '\\' || c == '\"');
-}
-
-char	*unquote_double(char *str, t_vector *v)
-{
-	int	escaped;
-
-	if (*str != '\"')
-		return (str);
-	++str;
-	while (*str != '\"')
-	{
-		escaped = 0;
-		if (*str == '\\'
-				&& is_double_quote_escapable(str[1]))
-		{
-			escaped = 1;
-			++str;
-		}
-		if (*str == '$' && !escaped)
-		{
-			str = expand(str, v);
-		}
-		else
-		{
-			vector_append(v, *str);
-			++str;
-		}
-	}
-	return (str);
-}
-
-char	*shift_quotes(char *word, t_wordexp *w)
-{
-	t_vector	v;
-
-	vector_initialize(&v);
-	while (*word == '\'' || *word == '\"')
-	{
-		if (*word == '\'')
-			word = unquote_single(word, &v);
-		else if (*word == '\"')
-			word = unquote_double(word, &v);
-		word++;
-	}
-	if (w->offset)
-		wordexp_join_arg(w, vector_gets(&v));
-	else
-		wordexp_append_arg(w, vector_gets(&v));
-	return (word);
-}
-
-char	*shift_expansion(char *word, t_wordexp *w)
-{
-	t_vector	v;
-	size_t		i;
-	char		**fields;
-
-	vector_initialize(&v);
-	if (word[1] == '\"')
-		return (shift_quotes(word + 1, w));
-	word = expand(word, &v);
-	if (v.data == NULL)
-		return (word);
-	fields = ft_split(vector_gets(&v), ' ');
-	free(v.data);
-	if (w->offset)
-		wordexp_join_arg(w, fields[0]);
-	else
-		wordexp_append_arg(w, fields[0]);
-	i = 1;
-	while (i < ft_strslen(fields))
-		wordexp_append_arg(w, fields[i++]);
-	free(fields);
-	return (word);
 }
 
 char	*shift_word(char *word, t_wordexp *w)

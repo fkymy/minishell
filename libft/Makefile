@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/02/01 14:02:52 by yufukuya         ###   ########.fr        #
+#    Updated: 2021/02/02 17:10:34 by yufukuya         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,6 +29,7 @@ mandatory := ft_memset.c \
 			 ft_strlcat.c \
 			 ft_strchr.c \
 			 ft_strrchr.c \
+			 ft_lastchr.c \
 			 ft_strnstr.c \
 			 ft_strncmp.c \
 			 ft_atoi.c \

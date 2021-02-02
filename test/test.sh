@@ -110,6 +110,15 @@ function exec_test()
 echo > results.txt ;
 
 
+### Tatakai
+exec_test 'cat /dev/random | head -c 100 | wc -c'
+exec_test "export a=\"aaa\"; echo \"\$a\", '\$a', \$a"
+exec_test "echo \"\\\$\$a\""
+exec_test "export a=\"echo abc > test1.txt\"; \$a"
+exec_test "export a=\"   a   \"; export b=\"  bbb  \"; echo \$a\$b"
+exec_test "export a='a' b=' b ' c='c ' d=' d' e='e e'; echo \$a\$a \$a\$b \$a\$c \$a\$d \$a\$e | cat -e; echo \$b\$a \$b\$b \$b\$c \$b\$d \$b\$e | cat -e; echo \$c\$a \$c\$b \$c\$c \$c\$d \$c\$e | cat -e; echo \$d\$a \$d\$b \$d\$c \$d\$d \$d\$e | cat -e; echo \$e\$a \$e\$b \$e\$c \$e\$d \$e\$e | cat -e"
+
+
 ### Syntax error
 # exec_test ';'
 # exec_test '|'
@@ -219,7 +228,7 @@ exec_test 'echo hello'
 exec_test 'echo hello world'
 exec_test 'echo hello ; echo world'
 exec_test 'echo hello ; echo world'
-exec_test 'echo 01234567890123456789 ; echo ; echo ; echo'
+exec_test 'echo 01234567890123456789 ; echo;echo;echo'
 
 
 ### | Pipe
@@ -419,9 +428,6 @@ exec_test "export CAT='cat -e | wc' ; \$CAT"
 exec_test "echo what > what.txt ; export CAT='cat what.txt' ; \$CAT ; rm what.txt"
 exec_test "export ECHO='echo hello > what.txt ; cat what.txt' ; \$ECHO"
 
-
-### Misc
-exec_test 'cat /dev/random | head -c 100 | wc -c'
 
 ### Optional
 

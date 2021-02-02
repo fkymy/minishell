@@ -8,3 +8,4 @@ minishell_test/
 minishell
 test/results.txt
 test/trace.txt
+libft/libft.a
