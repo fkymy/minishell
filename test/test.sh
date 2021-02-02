@@ -173,6 +173,187 @@ exec_test "echo 'echo hello'>a ; ./a; echo \$?;chmod +x a; ./a; echo \$? ; rm a"
 # exec_test 'echo $_ | echo $_ ; echo $_'
 # exec_test 'echo $_ | echo $_ ; echo $_ ; echo $_'
 # exec_test 'echo 1 2 3 ; echo $_ ; echo $_'
+# exec_test "echo"
+# exec_test "echo 1"
+# exec_test "echo 1 2 3"
+# exec_test "echo 1 2 3     "
+# exec_test "echo 1 2                      3"
+# exec_test "echo -n"
+# exec_test "echo -n1"
+# exec_test "echo - n1"
+# exec_test "echo - n 1"
+# exec_test "echo -n 1"
+# exec_test "echo -n 1 2 3"
+# exec_test "echo -n 1 2                      3"
+# exec_test "echo 1 2 3 -n"
+# exec_test "echo -n 1 2 3 -n"
+# exec_test "echo -n 1 2 -n 3 -n"
+# exec_test "       echo 1 2 3 -n"
+# exec_test "       echo -n 1 2 3 -n"
+# exec_test "echo a '' b '' c '' d"
+# exec_test 'echo a "" b "" c "" d'
+# exec_test "echo -n a '' b '' c '' d"
+# exec_test 'echo -n a "" b "" c "" d'
+# exec_test "echo '' '' ''          Echo 1"
+# exec_test "eCho 1"
+# exec_test "ecHo 1"
+# exec_test "echO 1"
+# exec_test "EchO 1"
+# exec_test "eCHo 1"
+# exec_test "EcHo 1"
+# exec_test "eChO 1"
+# exec_test "ECHO 1"
+# exec_test "unset PATH ; echo 1"
+# exec_test "unset PATH ; ECHO 1"
+# exec_test "''e''c''h''o'' 1"
+# exec_test "''e''c''h''o'''''' 1"
+# exec_test '""e""c""h""o"" 1'
+# exec_test '""e""c""h""o"""""" 1'
+# exec_test 'echo 1 ; echo $_'
+# exec_test 'ls ; echo $_'
+# exec_test '1 ; echo $_'
+# exec_test '1 ; echo $_ ; echo $_'
+# exec_test '1 | echo $_'
+# exec_test '1 | echo $_ | echo $_'
+# exec_test '1 | echo $_ ; echo $_'
+# exec_test 'echo $_ | echo $_'
+# exec_test 'echo $_ | echo $_ ; echo $_'
+# exec_test 'echo $_ | echo $_ ; echo $_ ; echo $_'
+# exec_test 'echo 1 2 3 ; echo $_ ; echo $_'
+# exec_test 'echo "1 2 3" ; echo $_ ; echo $_'
+# exec_test 'export TEST=echo ; $TEST 1'
+# exec_test "export TEST=echo ; ''$TEST 1"
+# exec_test 'export TEST=echo ; ""$TEST 1'
+# exec_test 'export TEST=echo ; "$TEST" 1'
+# exec_test "export TEST=echo ; '$TEST' 1"
+
+# cd
+# exec_test 'cd aaaaaa'
+# exec_test 'cd aaaaaa ; pwd'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd aaaaaa ; echo $PWD ; echo $OLDPWD'
+# exec_test 'cd ""'
+# exec_test 'cd "" ; pwd'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd "" ; echo $PWD ; echo $OLDPWD'
+# exec_test 'cd " "'
+# exec_test 'cd " " ; pwd'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd " " ; echo $PWD ; echo $OLDPWD'
+# exec_test 'cd ./'
+# exec_test 'cd ./ ; pwd'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd ./ ; echo $PWD ; echo $OLDPWD'
+# exec_test 'echo $OLDPWD'
+# exec_test 'cd $OLDPWD ; pwd'
+# exec_test 'cd $OLDPWD ; cd $OLDPWD ; pwd'
+# exec_test 'unset OLDPWD ; cd $OLDPWD ; pwd ; echo $PWD ; echo $OLDPWD'
+# exec_test 'unset OLDPWD ; cd $OLDPWD ; pwd ; echo $OLDPWD ; echo $PWD'
+# exec_test 'cd $WWW ; pwd'
+# exec_test 'cd $WWW$WWW../../ ; pwd'
+# exec_test 'cd $WWW./$WWW../$WWW ; pwd'
+# exec_test 'cd ../../../../../../../ ; pwd'
+# exec_test 'cd ../.././.././.././.././.././../ ; pwd'
+# exec_test '""c""d"" . ; pwd'
+# exec_test 'cd . ; pwd'
+# exec_test 'cd .. ; pwd'
+# exec_test 'cd .."""" ; pwd'
+# exec_test 'cd "".""."""" ; pwd'
+# exec_test 'cd ... ; pwd'
+# exec_test 'cd ../.. ; pwd'
+# exec_test 'cd ../. ; pwd'
+# exec_test 'cd ./. ; pwd'
+# exec_test 'cd / ; pwd'
+# exec_test 'cd // ; pwd'
+# exec_test 'cd //home ; pwd'
+# exec_test 'cd "//home" ; pwd'
+# exec_test 'echo $PWD; echo $OLDPWD; cd "//"; pwd; echo $PWD; echo $OLDPWD'
+# exec_test 'cd /// ; pwd'
+# exec_test 'cd // ; cd / ; env | grep PWD'
+# exec_test 'cd / ; cd // ; env | grep PWD'
+# exec_test 'cd /. ; cd //. ; env | grep PWD'
+# exec_test 'cd /.. ; cd //.. ; env | grep PWD'
+# exec_test 'cd ; pwd'
+# exec_test 'cd                    ; pwd'
+# exec_test 'cd        ""    ""        ; pwd'
+# exec_test 'cd        " "        ; echo $?'
+# exec_test 'cd ~ ; pwd'
+# exec_test 'cd ~/ ; pwd'
+# exec_test 'cd ~/. ; pwd'
+# exec_test 'unset HOME ; cd ; pwd'
+# exec_test 'unset HOME ; cd ~ ; pwd'
+# exec_test 'mkdir d ; ln -s d dd ; cd dd ; pwd'
+# exec_test 'mkdir -m 000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 001 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 002 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 003 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 004 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 005 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 006 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 007 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 010 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 020 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 030 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 040 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 050 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 060 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 070 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 100 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 200 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 300 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 400 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 500 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 600 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 700 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 755 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 644 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 311 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 111 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 222 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 333 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 0777 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 1000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 2000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 3000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 4000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 5000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 6000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 7000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 1777 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 2777 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 3777 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 4777 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 5777 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 6777 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 7777 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+# exec_test 'mkdir -m 0000 d ; echo $PWD ; echo $OLDPWD ; cd d ; echo $OLDPWD'
+
+# pwd
+# exec_test 'pwd'
+# exec_test 'pwd | cat -e'
+# exec_test 'unset PWD ; pwd'
+# exec_test 'unset PWD ; pwd ; echo $PWD'
+# exec_test 'export PWD=test ; pwd ; echo $PWD'
+# exec_test 'cd / ; cd home ; pwd'
+# exec_test 'cd // ; cd home ; pwd'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd / ; pwd ; echo $PWD ; echo $OLDPWD'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd /. ; pwd ; echo $PWD ; echo $OLDPW'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd /./ ; pwd ; echo $PWD ; echo $OLDPW'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd /././././ ; pwd; echo $PWD ; echo $OLDPW'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd // ; pwd ; echo $PWD ; echo $OLDPW'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd /// ; pwd ; echo $PWD ; echo $OLDPW'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd //// ; pwd ; echo $PWD ; echo $OLDPWD'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd ///// ; pwd ; echo $PWD ; echo $OLDPWD'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd ; echo $PWD ; echo $OLDPWD'
+# exec_test 'echo $PWD ; echo $OLDPWD ; cd ; echo $OLDPWD'
+
+# # export
+# exec_test 'export ECHO="echo   " ; $ECHO 1'
+# exec_test 'export ECHO="echo""   " ; $ECHO 1'
+# exec_test 'export ECHO=" echo   " ; $ECHO 1'
+# exec_test 'export ECHO=" echo   " ; $ECHO 1'
+# exec_test 'export A=aaa ; export B=bbb ; echo $A$B | cat -e'
+# exec_test 'export A=" aaa " ; export B=" bbb " ; echo $A$B | cat -e'
+# # export ECHO=echo'"' ; $ECHO 1
+# # export 'ECHO=echo""' ; $ECHO 1
+# # export "ECHO=echo''" ; $ECHO 1
+# # export ECHO=echo"'" ; $ECHO 1
 
 # export unset
 # exec_test 'export'

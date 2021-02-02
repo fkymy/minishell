@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 14:52:12 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 17:53:52 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ int			is_builtin(char *word)
 	char		**exp;
 	int			i;
 	const char	*builtins[] = {
-		"export", "unset", "env", "exit",
+		"echo", "cd", "pwd", "export", "unset", "env", "exit",
 		NULL
 	};
 
@@ -141,6 +141,12 @@ typedef int	(*t_builtin)(char **, char **, char **);
 
 int			exec_builtin(char *argv[])
 {
+	if (ft_strcmp(argv[0], "echo") == 0)
+		return (ft_echo(argv));
+	if (ft_strcmp(argv[0], "cd") == 0)
+		return (ft_cd(argv));
+	if (ft_strcmp(argv[0], "pwd") == 0)
+		return (ft_pwd());
 	if (ft_strcmp(argv[0], "export") == 0)
 		return (ft_export(argv));
 	if (ft_strcmp(argv[0], "unset") == 0)
