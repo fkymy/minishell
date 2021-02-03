@@ -159,9 +159,30 @@ exec_test 'asdfas | echo hello | echo world > WORLD | asdfas ; file WORLD; rm WO
 exec_test "echo 'echo hello'>a ; ./a; echo \$?;chmod +x a; ./a; echo \$? ; rm a"
 
 ### Absolute path
+exec_test '/bin/ls ; echo $?'
+exec_test '/home ; echo $?'
+exec_test '$PWD/minishell ; echo $SHLVL'
 
 
 ### Relative path
+exec_test '$OLDPWD ; echo $?'
+exec_test './. ; echo $?'
+exec_test './.. ; echo $?'
+exec_test './... ; echo $?'
+exec_test 'touch aaa ; ./aaa'
+exec_test 'touch bbb ; chmod +x bbb ; ./bbb'
+exec_test 'mkdir ccc ; ./ccc'
+exec_test 'mkdir ccc ; touch ccc/ddd ; chmod +x ccc/ddd ; ccc/ddd'
+exec_test 'touch eee ; echo "echo \$SHLVL" > eee ; echo exit >> eee ; ./minishell < eee'
+exec_test 'touch fff ; echo "echo \$SHLVL" > fff ; echo exit >> fff ; ././././././././minishell < fff'
+exec_test 'touch ggg ; echo "echo \$SHLVL" > ggg ; echo exit >> ggg ; .///././/./././minishell < ggg'
+exec_test 'touch hhh ; echo "echo \$SHLVL" > hhh ; echo \$OLDPWD >> hhh ; echo exit >> hhh ; .///././/./././minishell < hhh'
+
+
+### SHLVL
+# SHLVLV に文字列やINT_MAX, INT_MIN 以外の数字を与える
+# SHLVL の最大値は 1000
+# 1000 は表示されない
 
 
 ### Builtins
