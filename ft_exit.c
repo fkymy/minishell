@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/01 15:31:40 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 13:53:49 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/03 14:13:59 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ int			ft_isdigits(char *s)
 {
 	if (*s == '-')
 		s++;
+	if (*s == '\0')
+		return (0);
 	while (*s)
 		if (!ft_isdigit(*s++))
 			return (0);

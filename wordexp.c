@@ -6,25 +6,24 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 17:07:56 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/03 15:34:23 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "libft/libft.h"
 #include "minishell.h"
 
-void		wordexp_join_arg(t_wordexp *w, char *s)
+void	wordexp_join_arg(t_wordexp *w, char *s)
 {
 	char	*new_arg;
 
 	new_arg = ft_strjoin(w->wordv[w->wordc - 1], s);
 	free(w->wordv[w->wordc - 1]);
 	w->wordv[w->wordc - 1] = new_arg;
-	w->offset = ft_strlen(new_arg);
+	w->offset = ft_strlen(new_arg) ? ft_strlen(new_arg) : 1;
 	free(s);
 }
 
@@ -48,7 +47,7 @@ int		wordexp_append_arg(t_wordexp *w, char *word)
 	w->wordv[w->wordc] = word;
 	w->wordv[w->wordc + 1] = NULL;
 	++w->wordc;
-	w->offset = ft_strlen(word);
+	w->offset = ft_strlen(word) ? ft_strlen(word) : 1;
 	return (0);
 }
 
@@ -92,7 +91,6 @@ char	**wordexp_wrap(char *word)
 	w.wordc = 0;
 	w.wordv = NULL;
 	w.offset = 0;
-
 	if (wordexp(word, &w) < 0)
 		die("wordexp failed");
 	return (w.wordv);

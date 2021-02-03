@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:02:36 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 17:06:05 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 17:56:09 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ static char	*unquote_double(char *str, t_vector *v)
 	return (str);
 }
 
-char	*shift_quotes(char *word, t_wordexp *w)
+char		*shift_quotes(char *word, t_wordexp *w)
 {
 	t_vector	v;
 

@@ -25,9 +25,8 @@ int		ft_env(char *argv[])
 	if (ft_strslen(argv) != 1)
 	{
 		ft_putstr_fd("minishell: env: too many arguments\n", 2);
-		return (2);
+		return (1);
 	}
-
 	e = g_env;
 	while (e)
 	{
@@ -218,7 +217,7 @@ void	env_unset(t_env **ep, char *name)
 			if (prev)
 				prev->next = e->next;
 			else
-				*ep = NULL;
+				*ep = e->next;
 			env_free(e);
 			return ;
 		}

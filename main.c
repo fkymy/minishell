@@ -229,7 +229,7 @@ int			exec_builtin_parent(t_command *c)
 
 	in = -1;
 	out = -1;
-	c->argv = handle_redir(c->argv, &in, &out);
+	c->argv = process_redir(c->argv, &in, &out);
 	c->argv = process_words(c->argv);
 	ret = exec_builtin(c->argv);
 	if (in != -1)
@@ -241,10 +241,10 @@ int			exec_builtin_parent(t_command *c)
 
 pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 {
-	pid_t		pid;
-	int			newpipe[2];
-	char		**envp;
-	char		*pathname;
+	pid_t	pid;
+	int		newpipe[2];
+	char	**envp;
+	char	*pathname;
 
 	if (ispipe)
 		pipe(newpipe);
@@ -269,7 +269,7 @@ pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 			close(newpipe[1]);
 		}
 
-		argv = handle_redir(argv, NULL, NULL);
+		argv = process_redir(argv, NULL, NULL);
 		argv = process_words(argv);
 		if (argv == NULL)
 			exit(0);
@@ -326,6 +326,29 @@ t_command	*do_pipeline(t_command *c)
 	return (c);
 }
 
+void	wait_pipeine(pid_t pid)
+{
+	pid_t	exited_pid;
+	int		status;
+
+	exited_pid = waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+	{
+		g_exit_status = WEXITSTATUS(status);
+	}
+	else if (WIFSIGNALED(status))
+	{
+		g_exit_status = 128 + WTERMSIG(status);
+		if (WTERMSIG(status) == SIGQUIT)
+			ft_putstr_fd("Quit: 3\n", 2);
+		else
+			ft_putstr_fd("\n", 2);
+	}
+	else
+		die("child exited abnormally");
+	while (wait(NULL) > 0);
+}
+
 void	run_list(t_command *c)
 {
 	pid_t	exited_pid;
@@ -351,6 +374,7 @@ void	run_list(t_command *c)
 			}
 			else if (WIFSIGNALED(status))
 			{
+				g_exit_status = 128 + WTERMSIG(status);
 				if (WTERMSIG(status) == SIGQUIT)
 					ft_putstr_fd("Quit: 3\n", 2);
 				else
@@ -402,7 +426,8 @@ int			main(int argc, char *argv[])
 		}
 		if (ret == 1)
 		{
-			if (parse(commandline, &c) < 0)
+			c = command_new();
+			if (parse(commandline, c) < 0)
 			{
 				ft_putstr_fd("minishell: syntax error\n", 2);
 				g_exit_status = 2;
