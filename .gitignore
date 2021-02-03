@@ -6,6 +6,7 @@ a.out
 misc/
 minishell_test/
 minishell
-test/results.txt
-test/trace.txt
+*.txt
+test/*.txt
 libft/libft.a
+.vscode

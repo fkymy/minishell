@@ -6,60 +6,58 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:07:12 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 17:09:05 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 17:56:53 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/libft.h"
 #include "minishell.h"
 
-char	*build_envkey_shift(char **p)
+char	*expand_status(char *str, t_vector *v)
 {
-	char	*envkey;
-	int		len;
-	char	*s;
+	char	*status;
 
-	len = 0;
-	s = *p;
-	while (s[len] && (ft_isalnum(s[len]) || s[len] == '_'))
-		len++;
-	if (!(envkey = malloc(sizeof(char) * (len + 2))))
-		return (NULL);
-	ft_memcpy(envkey, s, len);
-	envkey[len] = '=';
-	envkey[len + 1] = '\0';
-	*p += len;
-	return (envkey);
+	if (!(status = ft_itoa(g_exit_status)))
+		die("malloc failed");
+	vector_appends(v, status);
+	free(status);
+	return (str + 2);
+}
+
+char	*expand_var(char *str, t_vector *v)
+{
+	char	*name;
+	t_env	*e;
+	int		i;
+
+	++str;
+	i = 0;
+	while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
+		i++;
+	name = ft_substr(str, 0, i);
+	e = env_get(g_env, name);
+	if (e && e->value != NULL)
+		vector_appends(v, e->value);
+	free(name);
+	return (str + i);
 }
 
 char	*expand(char *str, t_vector *v)
 {
-	char	**envp = env_make_envp(g_env, 0);
-	char	*envkey;
-	int		i;
-
 	if (*str != '$')
+	{
 		return (str);
+	}
 	if (str[1] == '?')
 	{
-		vector_appends(v, ft_itoa(g_exit_status));
-		return (str + 2);
+		return (expand_status(str, v));
 	}
 	if (!ft_isalpha(str[1]) && str[1] != '_')
 	{
 		vector_append(v, *str);
 		return (str + 1);
 	}
-	++str;
-	envkey = build_envkey_shift(&str);
-	i = 0;
-	while (envp[i] && ft_strncmp(envp[i], envkey, ft_strlen(envkey)))
-		i++;
-	if (envp[i])
-		vector_appends(v, envp[i] + ft_strlen(envkey));
-	free(envkey);
-	ft_split_free_null(envp);
-	return (str);
+	return (expand_var(str, v));
 }
 
 char	*shift_expansion(char *word, t_wordexp *w)
