@@ -125,6 +125,8 @@ exec_test "export a=\"   a   \"; export b=\"  bbb  \"; echo \$a\$b"
 exec_test "export a='a' b=' b ' c='c ' d=' d' e='e e'; echo \$a\$a \$a\$b \$a\$c \$a\$d \$a\$e | cat -e; echo \$b\$a \$b\$b \$b\$c \$b\$d \$b\$e | cat -e; echo \$c\$a \$c\$b \$c\$c \$c\$d \$c\$e | cat -e; echo \$d\$a \$d\$b \$d\$c \$d\$d \$d\$e | cat -e; echo \$e\$a \$e\$b \$e\$c \$e\$d \$e\$e | cat -e"
 exec_test "echo ^*@^@#890#aAS"
 exec_test "exit -"
+exec_test "export TEST=echo ; ''\$TEST 1"
+exec_test "export TEST=echo ; \"\"''\$T'ES'T 1"
 
 ### Syntax error
 # exec_test ';'
@@ -314,16 +316,17 @@ exec_test "echo hel'lo;''wor|$'''ld yeah"
 # quotes should work empty
 exec_test "echo '' | cat -e"
 exec_test "echo '''''' | cat -e"
+exec_test "echo '' '''' | cat -e"
 exec_test "echo \"\" | cat -e"
-exec_test "echo \"\"\"\"\"\" | cat -e"
+exec_test "echo \"\" \"\"\"\" | cat -e"
 exec_test "echo '' '' ''   ''"
 exec_test "echo \" \" \"\" \"\"  \"\""
-
-# quotes should work empty
-exec_test "ls'''''' | cat -e"
-exec_test "echo'''' '' | cat -e"
-exec_test "echo '''' | cat -e"
-exec_test "echo''\"\" '' '' | cat -e"
+exec_test "''echo '' | cat -e"
+exec_test "''\"\"e'c'\"\"ho'' | cat -e"
+exec_test "''\"\"l's''' | cat -e"
+exec_test "ls'''''' ''\"\"-la'' | cat -e"
+exec_test "echo'''' '' | ''c'at' -\"\"e"
+exec_test "echo''\"\" '' '' | \"\"''cat -e"
 
 # quotes should work with whitespaces
 exec_test "echo '   ' | cat -e"

@@ -257,6 +257,29 @@ t_command	*do_pipeline(t_command *c)
 	return (c);
 }
 
+void	wait_pipeine(pid_t pid)
+{
+	pid_t	exited_pid;
+	int		status;
+
+	exited_pid = waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+	{
+		g_exit_status = WEXITSTATUS(status);
+	}
+	else if (WIFSIGNALED(status))
+	{
+		g_exit_status = 128 + WTERMSIG(status);
+		if (WTERMSIG(status) == SIGQUIT)
+			ft_putstr_fd("Quit: 3\n", 2);
+		else
+			ft_putstr_fd("\n", 2);
+	}
+	else
+		die("child exited abnormally");
+	while (wait(NULL) > 0);
+}
+
 void	run_list(t_command *c)
 {
 	pid_t	exited_pid;
@@ -282,6 +305,7 @@ void	run_list(t_command *c)
 			}
 			else if (WIFSIGNALED(status))
 			{
+				g_exit_status = 128 + WTERMSIG(status);
 				if (WTERMSIG(status) == SIGQUIT)
 					ft_putstr_fd("Quit: 3\n", 2);
 				else
