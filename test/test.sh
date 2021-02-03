@@ -115,9 +115,16 @@ exec_test 'cat /dev/random | head -c 100 | wc -c'
 exec_test "export a=\"aaa\"; echo \"\$a\", '\$a', \$a"
 exec_test "echo \"\\\$\$a\""
 exec_test "export a=\"echo abc > test1.txt\"; \$a"
+
+exec_test "export A ; echo hello > \$A"
+exec_test "export A= ; echo hello > \$A"
+exec_test "export A='a b c' ; echo hello > \$A"
+
+### Bug fix
 exec_test "export a=\"   a   \"; export b=\"  bbb  \"; echo \$a\$b"
 exec_test "export a='a' b=' b ' c='c ' d=' d' e='e e'; echo \$a\$a \$a\$b \$a\$c \$a\$d \$a\$e | cat -e; echo \$b\$a \$b\$b \$b\$c \$b\$d \$b\$e | cat -e; echo \$c\$a \$c\$b \$c\$c \$c\$d \$c\$e | cat -e; echo \$d\$a \$d\$b \$d\$c \$d\$d \$d\$e | cat -e; echo \$e\$a \$e\$b \$e\$c \$e\$d \$e\$e | cat -e"
-
+exec_test "echo ^*@^@#890#aAS"
+exec_test "exit -"
 
 ### Syntax error
 # exec_test ';'
@@ -199,6 +206,7 @@ exec_test "export _ABC ; env | grep _ABC ; export _DEF= ; env | grep _DEF ; expo
 
 # exit
 exec_test 'exit 0'
+exec_test 'exit -'
 exec_test 'exit -1'
 exec_test 'exit -0'
 exec_test 'exit ----21'

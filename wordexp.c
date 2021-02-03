@@ -6,18 +6,17 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 17:07:56 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/02 17:57:14 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "libft/libft.h"
 #include "minishell.h"
 
-void		wordexp_join_arg(t_wordexp *w, char *s)
+void	wordexp_join_arg(t_wordexp *w, char *s)
 {
 	char	*new_arg;
 
@@ -92,7 +91,6 @@ char	**wordexp_wrap(char *word)
 	w.wordc = 0;
 	w.wordv = NULL;
 	w.offset = 0;
-
 	if (wordexp(word, &w) < 0)
 		die("wordexp failed");
 	return (w.wordv);

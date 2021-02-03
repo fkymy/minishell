@@ -61,8 +61,6 @@ void			vector_free(t_vector *v);
 # define TOKEN_SEPARATOR 5
 # define TOKEN_OTHER -1
 
-int				token_isop(int t);
-int				token_ispipe(int t);
 char			*get_next_token(char *str, int *type, char **token);
 
 /* parse.c */
@@ -71,11 +69,11 @@ char			*get_next_token(char *str, int *type, char **token);
 # define OP_OR 4
 # define OP_SEPARATOR 5
 # define OP_OTHER -1
-int				parse(char *commandline, t_command **c);
-int				isredir(char *str);
+
+int				parse(char *commandline, t_command *c);
 
 /* redir.c */
-char			**handle_redir(char **argv, int *in, int *out);
+char			**process_redir(char **argv, int *in, int *out);
 
 /* wordexp.c */
 typedef struct	s_wordexp
@@ -123,5 +121,8 @@ volatile sig_atomic_t	g_interrupt;
 void					handler(int signum);
 void					set_signal_handler(void (*func)(int));
 
+/* shell_utils.c */
+int						isshellspecial(int c);
+int						isredir(char *str);
 
 #endif
