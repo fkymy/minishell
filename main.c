@@ -200,8 +200,6 @@ int			is_builtin(char *word)
 	return (ret);
 }
 
-typedef int	(*t_builtin)(char **, char **, char **);
-
 int			exec_builtin(char *argv[])
 {
 	if (ft_strcmp(argv[0], "echo") == 0)
@@ -229,9 +227,13 @@ int			exec_builtin_parent(t_command *c)
 
 	in = -1;
 	out = -1;
-	c->argv = process_redir(c->argv, &in, &out);
-	c->argv = process_words(c->argv);
-	ret = exec_builtin(c->argv);
+	ret = 0;
+	if (!(c->argv = process_redir(c->argv, &in, &out)))
+		ret = 1;
+	else if (!(c->argv = process_words(c->argv)))
+		die("failed to process words");
+	else
+		ret = exec_builtin(c->argv);
 	if (in != -1)
 		dup2(in, 0);
 	if (out != -1)
@@ -270,6 +272,8 @@ pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		}
 
 		argv = process_redir(argv, NULL, NULL);
+		if (argv == NULL)
+			exit(1);
 		argv = process_words(argv);
 		if (argv == NULL)
 			exit(0);
@@ -388,6 +392,31 @@ void	run_list(t_command *c)
 	}
 }
 
+int			run_one_command(char *commandline)
+{
+	t_command	*c;
+
+	c = command_new();
+	if (parse(commandline, c) < 0)
+	{
+		ft_putstr_fd("minishell: syntax error\n", 2);
+		g_exit_status = 2;
+	}
+	else if (c->argc)
+		run_list(c);
+	command_lstclear(&c);
+	exit(g_exit_status);
+	return (0);
+}
+
+void		shell_initialize(void)
+{
+	g_exit_status = 0;
+	g_env = env_init();
+	if (!(g_path = ft_split(env_get(g_env, "PATH")->value, ':')))
+		die(strerror(errno));
+}
+
 int			main(int argc, char *argv[])
 {
 	char		*commandline;
@@ -395,14 +424,12 @@ int			main(int argc, char *argv[])
 	int			ret;
 	int			needprompt;
 
-	(void)argv;
+	shell_initialize();
+	set_signal_handler(handler);
+	if (argc == 3 && ft_strcmp(argv[1], "-c") == 0)
+		return (run_one_command(argv[2]));
 	if (argc != 1)
 		return (42);
-
-	g_exit_status = 0;
-	g_env = env_init();
-	if (!(g_path = ft_split(env_get(g_env, "PATH")->value, ':')))
-		die(strerror(errno));
 	needprompt = 1;
 	commandline = NULL;
 	while (42)
@@ -430,7 +457,7 @@ int			main(int argc, char *argv[])
 			if (parse(commandline, c) < 0)
 			{
 				ft_putstr_fd("minishell: syntax error\n", 2);
-				g_exit_status = 2;
+				g_exit_status = 258;
 			}
 			else if (c->argc)
 				run_list(c);

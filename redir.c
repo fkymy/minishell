@@ -6,13 +6,14 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:14:27 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/03 13:10:28 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/03 19:51:41 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <stdio.h>
 
 #include "libft/libft.h"
 #include "minishell.h"
@@ -21,48 +22,74 @@ static char	*expand_filename(char *arg)
 {
 	char	*filename;
 	char	**word;
+	int		err;
 
+	err = 0;
 	word = wordexp_wrap(arg);
-	if (!word || ft_strslen(word) != 1)
-		die("minishell: ambiguous redirect (word null)");
-	if (ft_strslen(word) != 1)
-		die("minishell: ambiguous redirect (more than one word)");
-	if (ft_strlen(*word) == 0)
-		die("minishell: ambiguous redirect (word is empty)");
+	if (!word || ft_strslen(word) != 1 || ft_strlen(*word) == 0)
+	{
+		ft_putstr_fd("minishell: ambiguous redirect\n", 2);
+		if (word)
+			free(*word);
+		free(word);
+		return (NULL);
+	}
 	filename = *word;
 	free(word);
 	return (filename);
 }
 
-static void	redirect(int fd, int stdfd, int *save)
+static int	redirect(int fd, int stdfd, int *save)
 {
 	if (fd == -1)
-		die(strerror(errno));
-	if (save)
+	{
+		ft_putstr_fd("minishell: Permission denied\n", 2);
+		return (fd);
+	}
+	if (save && *save == -1)
 		*save = dup(stdfd);
 	dup2(fd, stdfd);
 	close(fd);
+	return (fd);
 }
 
 static char	**redirect_free(char **argv, int *in, int *out)
 {
 	char	*filename;
+	int		fd;
 
+	fd = 0;
 	if (!(filename = expand_filename(argv[1])))
-		die(strerror(errno));
+		return (NULL);
 	if (ft_strcmp(*argv, "<") == 0)
-		redirect(open(filename, O_RDONLY), 0, in);
+		fd = redirect(open(filename, O_RDONLY), 0, in);
 	else if (ft_strcmp(*argv, ">") == 0)
-		redirect(open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0666), 1, out);
+		fd = redirect(open(filename,
+					O_WRONLY | O_CREAT | O_TRUNC, 0666), 1, out);
 	else if (ft_strcmp(*argv, ">>") == 0)
-		redirect(open(filename, O_WRONLY | O_CREAT | O_APPEND, 0666), 1, out);
+		fd = redirect(open(filename,
+					O_WRONLY | O_CREAT | O_APPEND, 0666), 1, out);
 	free(filename);
+	if (fd == -1)
+		return (NULL);
 	free(*argv);
 	free(argv[1]);
 	return (argv + 2);
 }
 
-char	**process_redir(char **argv, int *in, int *out)
+static char	**return_free(char **argv, int i, char **newargv)
+{
+	while (argv[i])
+		free(argv[i++]);
+	free(argv);
+	i = 0;
+	while (newargv[i])
+		free(newargv[i++]);
+	free(newargv);
+	return (NULL);
+}
+
+char		**process_redir(char **argv, int *in, int *out)
 {
 	int		i;
 	int		j;
@@ -70,7 +97,7 @@ char	**process_redir(char **argv, int *in, int *out)
 
 	if (!argv)
 		return (NULL);
-	if (!(newargv = malloc(sizeof(char *) * (ft_strslen(argv) + 1))))
+	if (!(newargv = ft_calloc((ft_strslen(argv) + 1), sizeof(char *))))
 		die(strerror(errno));
 	i = 0;
 	j = 0;
@@ -80,11 +107,11 @@ char	**process_redir(char **argv, int *in, int *out)
 			newargv[j++] = argv[i++];
 		else
 		{
-			redirect_free(argv + i, in, out);
+			if (!(redirect_free(argv + i, in, out)))
+				return (return_free(argv, i, newargv));
 			i += 2;
 		}
 	}
-	newargv[j] = NULL;
 	free(argv);
 	return (newargv);
 }

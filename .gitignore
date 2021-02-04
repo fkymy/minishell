@@ -5,6 +5,7 @@ a.out
 
 misc/
 minishell_test/
+minishell-tester/
 minishell
 *.txt
 test/*.txt

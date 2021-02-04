@@ -1,4 +1,4 @@
-# Makefile for minishell, updated Wed Feb  3 16:43:20 JST 2021
+# Makefile for minishell, updated Thu Feb  4 15:41:12 JST 2021
 
 SRC := command.c commandline.c env.c ft_cd.c ft_echo.c ft_exit.c ft_export.c ft_pwd.c ft_unset.c main.c parse.c redir.c shell_utils.c signal.c token.c vector.c wordexp.c wordexp_quote.c wordexp_var.c
 
@@ -21,26 +21,12 @@ LIBS := -Llibft -lft
 LIBFT_DIR := libft
 LIBFT := $(LIBFT_DIR)/libft.a
 
-RESET		= \033[0m
-RED			= \033[0;31m
-GREEN		= \033[0;32m
-YELLOW		= \033[0;33m
-BLUE		= \033[0;34m
-MAGENT		= \033[0;35m
-CYAAN		= \033[0;36m
-WHITE		= \033[0;37m
-B_RESET		= \033[0;49m
-B_YELLOW	= \033[0;43m
-B_CYAAN		= \033[0;46m
-BOLD		= \033[1m
-UNDER_LINE	= \033[4m
-
 .PHONY: all re fclean clean install source lint test
 all: $(NAME)
 
 $(NAME): $(OBJ) $(LIBFT)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIBS)
-	@echo "\n$(GREEN)$(BOLD)$(UNDER_LINE)Compiled Successfully.$(RESET)\n"
+	@echo "\nCompiled Successfully.\n"
 
 $(OBJ): %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
