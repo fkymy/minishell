@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 18:44:17 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/04 12:19:55 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 int				ft_echo(char *argv[]);
 int				ft_cd(char *argv[]);
 int				ft_pwd(void);
+char			*get_pwd(void);
 int				ft_exit(char *argv[]);
 int				ft_export(char *argv[]);
 int				ft_unset(char *argv[]);
