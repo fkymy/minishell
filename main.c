@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 14:52:12 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/03 16:22:03 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,28 +64,89 @@ int		is_cmd_builtins(char *cmd)
 	return (42);
 }
 
-char	*is_cmd_exist(char **paths, char *cmd)
+int		is_cmd_dir(char *path2cmd)
+{
+	t_stat	stat_buf;
+
+	if (stat(path2cmd, &stat_buf) == 0)
+		if ((stat_buf.st_mode & S_IFDIR) == S_IFDIR)
+			return (1);
+	return (0);
+}
+
+int		is_cmd_permitted(char *path2cmd)
+{
+	t_stat	stat_buf;
+
+	if (stat(path2cmd, &stat_buf) == 0)
+		if ((stat_buf.st_mode & S_IXUSR) == S_IXUSR)
+			return (1);
+	return (0);
+}
+
+char	*is_cmd_exist(char *cmd)
 {
 	int		i;
 	t_stat	stat_buf;
 	char	*tmp;
 	char	*path2cmd;
+	char	*cwd;
 
 	i = 0;
-	while (42)
+	while (g_path[i])
 	{
-		if (!(tmp = ft_strjoin(paths[i], "/")))
-			break ;
-		if (!(path2cmd = ft_strjoin(tmp, cmd)))
-			break ;
+		if ((tmp = ft_strjoin(g_path[i], "/")) == NULL)
+			die(strerror(errno));
+		if ((path2cmd = ft_strjoin(tmp, cmd)) == NULL)
+			die(strerror(errno));
 		ft_free_null(&tmp);
-		if (!stat(path2cmd, &stat_buf))
+		if (stat(path2cmd, &stat_buf) == 0)
 			return (path2cmd);
 		ft_free_null(&path2cmd);
 		i++;
 	}
-	ft_free_null(&tmp);
-	ft_free_null(&path2cmd);
+	if (ft_strncmp(cmd, "./", 2) == 0
+			|| ft_strncmp(cmd, "../", 3) == 0
+			|| ft_strncmp(cmd, "/", 1) == 0)
+	{
+		if (ft_strncmp(cmd, "/", 1) != 0)
+		{
+			if (!(cwd = getcwd(NULL, 0)))
+				die(strerror(errno));
+			if ((tmp = ft_strjoin(cwd, "/")) == NULL)
+				die(strerror(errno));
+			if ((path2cmd = ft_strjoin(tmp, cmd)) == NULL)
+				die(strerror(errno));
+			free(tmp);
+		}
+		else
+			path2cmd = ft_strdup(cmd);
+		if (is_cmd_dir(path2cmd) == 1)
+		{
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(cmd, 2);
+			ft_putstr_fd(": is a directory\n", 2);
+			exit(126);
+		}
+		if (stat(path2cmd, &stat_buf) == 0)
+		{
+			if (is_cmd_permitted(path2cmd) == 0)
+			{
+				ft_putstr_fd("minishell: ", 2);
+				ft_putstr_fd(cmd, 2);
+				ft_putstr_fd(": Permission denied\n", 2);
+				exit(126);
+			}
+			return (path2cmd);
+		}
+		else
+		{
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(cmd, 2);
+			ft_putstr_fd(": No such file or directory\n", 2);
+			exit(127);
+		}
+	}
 	return (NULL);
 }
 
@@ -120,12 +181,14 @@ int			is_builtin(char *word)
 	char		**exp;
 	int			i;
 	const char	*builtins[] = {
-		"export", "unset", "env", "exit",
+		"echo", "cd", "pwd", "export", "unset", "env", "exit",
 		NULL
 	};
 
 	ret = 0;
 	exp = wordexp_wrap(word);
+	if (exp == NULL)
+		return (ret);
 	i = -1;
 	while (builtins[++i])
 		if (ft_strcmp(builtins[i], *exp) == 0)
@@ -141,6 +204,12 @@ typedef int	(*t_builtin)(char **, char **, char **);
 
 int			exec_builtin(char *argv[])
 {
+	if (ft_strcmp(argv[0], "echo") == 0)
+		return (ft_echo(argv));
+	if (ft_strcmp(argv[0], "cd") == 0)
+		return (ft_cd(argv));
+	if (ft_strcmp(argv[0], "pwd") == 0)
+		return (ft_pwd());
 	if (ft_strcmp(argv[0], "export") == 0)
 		return (ft_export(argv));
 	if (ft_strcmp(argv[0], "unset") == 0)
@@ -208,12 +277,12 @@ pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		if (is_builtin(argv[0]))
 			exit(exec_builtin(argv));
 
-		envp = env_make_envp(g_env, 0);
-		if (!(pathname = is_cmd_exist(g_path, argv[0])))
+		if ((pathname = is_cmd_exist(argv[0])) == NULL)
 		{
 			ft_putstr_fd("minishell: command not found\n", 2);
 			exit(127);
 		}
+		envp = env_make_envp(g_env, 0);
 		if (execve(pathname, argv, envp) < 0)
 		{
 			perror("failed to execve");
