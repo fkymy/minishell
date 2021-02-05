@@ -123,7 +123,6 @@ exec_test "export A='a b c' ; echo hello > \$A"
 exec_test "export a=\"   a   \"; export b=\"  bbb  \"; echo \$a\$b"
 exec_test "export a='a' b=' b ' c='c ' d=' d' e='e e'; echo \$a\$a \$a\$b \$a\$c \$a\$d \$a\$e | cat -e; echo \$b\$a \$b\$b \$b\$c \$b\$d \$b\$e | cat -e; echo \$c\$a \$c\$b \$c\$c \$c\$d \$c\$e | cat -e; echo \$d\$a \$d\$b \$d\$c \$d\$d \$d\$e | cat -e; echo \$e\$a \$e\$b \$e\$c \$e\$d \$e\$e | cat -e"
 exec_test "echo ^*@^@#890#aAS"
-exec_test "exit -"
 exec_test "export TEST=echo ; ''\$TEST 1"
 exec_test "export TEST=echo ; \"\"''\$T'ES'T 1"
 
@@ -139,19 +138,25 @@ exec_test "export PATH=' ';echo \$PATH"
 exec_test "export A=\"           \" ;echo \$A"
 
 exec_test "export A='' B=\" \" C=\"    \" D=\"  d \" ; echo \$A \$B \$C \$D | cat -e ; echo \$A\$B''\"\$C\"\$D | cat -e"
-
 exec_test "export A='a' B=' ' C=' c ' ; echo \$A\$B\$A | cat -e ; echo \$A\$A\$A \$A \$A | cat -e ; echo \$C\$B \$B\$C | cat -e ; echo \$A\$C \$A\$B\$C"
-
 exec_test "export A='a' B=' ' ; echo \$A\$B\$A ; echo \$A \$B \$A; echo \$A\$B\$B\$B\$A"
+
+exec_test "exit -"
+exec_test 'exit +1'
+exec_test 'exit +0'
+exec_test "exit ' 3'"
+exec_test "exit '\t\f\r 3'"
+exec_test "exit Mollitia asperiores"
+exec_test "exit 123 456 asperiores"
+exec_test "exit 18446744073709551615"
+# exec_test "exit -9223372036854775809"
+exec_test "exit 9223372036854775808"
+
 
 ### 未対応
 # exec_test "export A=aaa ; export A+=bbb ; echo \$A"
 
 # exec_test 'mkdir ccc ; touch ccc/ddd ; chmod +x ccc/ddd ; ccc/ddd'
-# export ECHO=echo'"' ; $ECHO 1
-# export 'ECHO=echo""' ; $ECHO 1
-# export "ECHO=echo''" ; $ECHO 1
-# export ECHO=echo"'" ; $ECHO 1
 
 ### Syntax error
 # exec_test ';'
