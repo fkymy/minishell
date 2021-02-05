@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/02/02 17:10:34 by yufukuya         ###   ########.fr        #
+#    Updated: 2021/02/05 14:25:22 by yufukuya         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,7 @@ mandatory := ft_memset.c \
 			 ft_isascii.c \
 			 ft_isprint.c \
 			 ft_isspace.c \
+			 ft_isspaces.c \
 			 ft_toupper.c \
 			 ft_tolower.c \
 			 ft_calloc.c \

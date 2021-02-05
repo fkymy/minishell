@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:02:36 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 17:56:09 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/04 16:44:16 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ static char	*unquote_single(char *str, t_vector *v)
 	if (*str != '\'')
 		return (str);
 	++str;
-	while (*str != '\'')
+	while (*str && *str != '\'')
 	{
 		vector_append(v, *str);
 		++str;
@@ -38,7 +38,7 @@ static char	*unquote_double(char *str, t_vector *v)
 	if (*str != '\"')
 		return (str);
 	++str;
-	while (*str != '\"')
+	while (*str && *str != '\"')
 	{
 		escaped = 0;
 		if (*str == '\\'
@@ -71,6 +71,8 @@ char		*shift_quotes(char *word, t_wordexp *w)
 			word = unquote_single(word, &v);
 		else if (*word == '\"')
 			word = unquote_double(word, &v);
+		if (*word == '\0')
+			break ;
 		word++;
 	}
 	if (w->offset)

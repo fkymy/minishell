@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/27 20:21:32 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/02 17:10:20 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 14:25:04 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ int				ft_isprint(int c);
 int				ft_toupper(int c);
 int				ft_tolower(int c);
 int				ft_isspace(int c);
+int				ft_isspaces(char *s);
 void			*ft_calloc(size_t count, size_t size);
 char			*ft_strdup(const char *s1);
 

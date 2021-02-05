@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/01 15:32:29 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/03 14:10:08 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/04 16:05:20 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ static int	export_list(t_env *env)
 	envp = env_make_envp(env, 1);
 	ft_strsort(envp, ft_strslen(envp), compare);
 	i = 0;
-	while(envp[i])
+	while (envp[i])
 	{
 		write(1, "declare -x ", 11);
 		env_print(envp[i], 1);

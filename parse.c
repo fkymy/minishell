@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/21 17:47:51 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/03 13:44:30 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 11:23:47 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ int					parse(char *commandline, t_command *c)
 			}
 		}
 	}
-	if (c->argc && !c->op)
+	if (c->argc && c->op != TOKEN_SEPARATOR)
 		if (!set_operator(c, TOKEN_SEPARATOR))
 			return (-1);
 	return (0);
