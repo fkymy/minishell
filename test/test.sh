@@ -152,11 +152,11 @@ exec_test "exit 18446744073709551615"
 # exec_test "exit -9223372036854775809"
 exec_test "exit 9223372036854775808"
 
+exec_test "mkdir ccc ; echo '#!/bin/sh' 'echo hello' > ccc/ddd ; chmod +x ccc/ddd ; ccc/ddd ; rm -rf ccc"
+
 
 ### 未対応
 # exec_test "export A=aaa ; export A+=bbb ; echo \$A"
-
-# exec_test 'mkdir ccc ; touch ccc/ddd ; chmod +x ccc/ddd ; ccc/ddd'
 
 ### Syntax error
 # exec_test ';'
