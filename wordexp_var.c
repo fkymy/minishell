@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:07:12 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 14:25:32 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 17:48:03 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,8 @@ char	*shift_expansion(char *word, t_wordexp *w)
 	if (v.data == NULL)
 		return (word);
 	fields = ft_split(vector_gets(&v), ' ');
-	if (!ft_isspaces(vector_gets(&v)) && (w->offset == 0 || (*vector_gets(&v) == ' ')))
+	if (!ft_isspaces(vector_gets(&v))
+			&& (w->offset == 0 || (*vector_gets(&v) == ' ')))
 		wordexp_append_arg(w, fields[0] ? fields[0] : ft_strdup(""));
 	else
 		wordexp_join_arg(w, fields[0] ? fields[0] : ft_strdup(""));

@@ -6,57 +6,85 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/04 12:19:55 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/05 18:12:58 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-/* builtins */
-int				ft_echo(char *argv[]);
-int				ft_cd(char *argv[]);
-int				ft_pwd(void);
-char			*get_pwd(void);
-int				ft_exit(char *argv[]);
-int				ft_export(char *argv[]);
-int				ft_unset(char *argv[]);
-int				ft_env(char *argv[]);
-
-/* get_next_commandline.c */
-int				get_next_commandline(int fd, char **line);
-
-/* command.c */
-typedef struct	s_command
+typedef struct			s_command
 {
 	struct s_command	*next;
 	int					argc;
 	char				**argv;
 	int					op;
 	pid_t				pid;
-}				t_command;
+}						t_command;
 
-t_command		*command_new(void);
-int				command_append_arg(t_command *c, char *word);
-void			command_clear_args(char **argv);
-void			command_lstclear(t_command **c);
-
-/* vector.c */
-typedef struct	s_vector
+typedef struct			s_vector
 {
-	char	*data;
-	size_t	size;
-	size_t	capacity;
-	int		error;
-}				t_vector;
+	char				*data;
+	size_t				size;
+	size_t				capacity;
+	int					error;
+}						t_vector;
 
-void			vector_initialize(t_vector *v);
-void			vector_append(t_vector *v, int c);
-void			vector_appends(t_vector *v, char *s);
-char			*vector_gets(t_vector *v);
-void			vector_free(t_vector *v);
+typedef struct			s_wordexp
+{
+	size_t				wordc;
+	char				**wordv;
+	size_t				offset;
+}						t_wordexp;
 
-/* token.c */
+typedef struct			s_env
+{
+	struct s_env		*next;
+	char				*name;
+	char				*value;
+}						t_env;
+
+extern t_env			*g_env;
+extern int				g_exit_status;
+volatile sig_atomic_t	g_interrupt;
+
+int						ft_echo(char *argv[]);
+int						ft_cd(char *argv[]);
+int						ft_pwd(void);
+char					*get_pwd(void);
+int						ft_exit(char *argv[]);
+int						ft_export(char *argv[]);
+int						ft_unset(char *argv[]);
+int						ft_env(char *argv[]);
+
+t_command				*command_new(void);
+int						command_append_arg(t_command *c, char *word);
+void					command_clear_args(char **argv);
+void					command_lstclear(t_command **c);
+
+pid_t					start_command(char *argv[], int ispipe,
+										int haspipe, int lastpipe[2]);
+void					run_list(t_command *c);
+char					**process_words(char *argv[]);
+
+void					setup_pipe(int ispipe, int haspipe,
+									int newpipe[2], int lastpipe[2]);
+void					cleanup_pipe(int haspipe, int lastpipe[2]);
+t_command				*do_pipeline(t_command *c);
+void					wait_pipeine(pid_t pid, int *condition);
+
+int						is_builtin(char *word, int expand);
+int						exec_builtin(char *argv[]);
+int						exec_builtin_parent(t_command *c);
+
+int						get_next_commandline(int fd, char **line);
+
+void					vector_initialize(t_vector *v);
+void					vector_append(t_vector *v, int c);
+void					vector_appends(t_vector *v, char *s);
+char					*vector_gets(t_vector *v);
+void					vector_free(t_vector *v);
+
 # define TOKEN_WORD 0
 # define TOKEN_REDIRECTION 1
 # define TOKEN_PIPE 2
@@ -65,69 +93,56 @@ void			vector_free(t_vector *v);
 # define TOKEN_SEPARATOR 5
 # define TOKEN_OTHER -1
 
-char			*get_next_token(char *str, int *type, char **token);
+char					*get_next_token(char *str, int *type, char **token);
 
-/* parse.c */
 # define OP_PIPE 2
 # define OP_AND 3
 # define OP_OR 4
 # define OP_SEPARATOR 5
 # define OP_OTHER -1
 
-int				parse(char *commandline, t_command *c);
+int						parse(char *commandline, t_command *c);
 
-/* redir.c */
-char			**process_redir(char **argv, int *in, int *out);
+char					**process_redir(char **argv, int *in, int *out);
 
-/* wordexp.c */
-typedef struct	s_wordexp
-{
-	size_t 		wordc;
-	char		**wordv;
-	size_t		offset;
-}				t_wordexp;
+int						wordexp(char *word, t_wordexp *w);
+char					**wordexp_wrap(char *word);
 
-int				wordexp(char *word, t_wordexp *w);
-char			**wordexp_wrap(char *word);
+void					wordexp_join_arg(t_wordexp *w, char *s);
+int						wordexp_append_arg(t_wordexp *w, char *word);
 
-void			wordexp_join_arg(t_wordexp *w, char *s);
-int				wordexp_append_arg(t_wordexp *w, char *word);
+char					*shift_quotes(char *word, t_wordexp *w);
+char					*shift_expansion(char *word, t_wordexp *w);
+char					*expand(char *str, t_vector *v);
 
-char			*shift_quotes(char *word, t_wordexp *w);
-char			*shift_expansion(char *word, t_wordexp *w);
-char			*expand(char *str, t_vector *v);
+t_env					*env_init(void);
+t_env					*env_new(char *str);
+t_env					*env_get(t_env *e, char *name);
+void					env_set(t_env **e, t_env *new);
+void					env_unset(t_env **ep, char *name);
+char					**env_make_envp(t_env *e, int isexport);
+char					*env_split_name(char *str);
+char					*env_split_value(char *str);
+int						env_size(t_env *env);
+void					env_free(t_env *e);
 
-/* env.c */
-typedef struct		s_env {
-	struct s_env	*next;
-	char			*name;
-	char			*value;
-}					t_env;
+void					env_print(char *str, int quote);
+t_env					*env_make_new(char *name, char *value);
 
-extern t_env	*g_env;
-t_env			*env_init(void);
-t_env			*env_new(char *str);
-t_env			*env_get(t_env *e, char *name);
-void			env_set(t_env **e, t_env *new);
-void			env_unset(t_env **ep, char *name);
-char			**env_make_envp(t_env *e, int isexport);
-char			*env_split_name(char *str);
-void			env_print(char *str, int quote);
-t_env			*env_make_new(char *name, char *value);
+char					*env_join_name_value(t_env *env);
 
-char			*env_join_name_value(t_env *env);
+char					*build_path(char *cmd);
+int						is_cmd_dir(char *path2cmd);
+int						is_cmd_permitted(char *path2cmd);
 
-/* main.c */
-extern int		g_exit_status;
-void			die(char *msg);
+char					**process_words(char *argv[]);
 
-/* signal.c */
-volatile sig_atomic_t	g_interrupt;
 void					handler(int signum);
 void					set_signal_handler(void (*func)(int));
 
-/* shell_utils.c */
 int						isshellspecial(int c);
 int						isredir(char *str);
+
+void					die(char *msg);
 
 #endif

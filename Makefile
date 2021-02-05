@@ -1,8 +1,8 @@
-# Makefile for minishell, updated Thu Feb  4 15:41:12 JST 2021
+# Makefile for minishell, updated Fri Feb  5 17:41:24 JST 2021
 
-SRC := command.c commandline.c env.c ft_cd.c ft_echo.c ft_exit.c ft_export.c ft_pwd.c ft_unset.c main.c parse.c redir.c shell_utils.c signal.c token.c vector.c wordexp.c wordexp_quote.c wordexp_var.c
+SRC := builtin.c command.c commandline.c env.c execute.c ft_cd.c ft_echo.c ft_exit.c ft_export.c ft_pwd.c ft_unset.c main.c parse.c path.c path_utils.c pipeline.c redir.c shell_utils.c signal.c token.c vector.c wordexp.c wordexp_quote.c wordexp_var.c
 
-OBJ := command.o commandline.o env.o ft_cd.o ft_echo.o ft_exit.o ft_export.o ft_pwd.o ft_unset.o main.o parse.o redir.o shell_utils.o signal.o token.o vector.o wordexp.o wordexp_quote.o wordexp_var.o
+OBJ := builtin.o command.o commandline.o env.o execute.o ft_cd.o ft_echo.o ft_exit.o ft_export.o ft_pwd.o ft_unset.o main.o parse.o path.o path_utils.o pipeline.o redir.o shell_utils.o signal.o token.o vector.o wordexp.o wordexp_quote.o wordexp_var.o
 
 HDR := minishell.h
 
