@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:14:27 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/03 19:51:41 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 14:22:12 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,8 @@ static int	redirect(int fd, int stdfd, int *save)
 {
 	if (fd == -1)
 	{
-		ft_putstr_fd("minishell: Permission denied\n", 2);
+		ft_putstr_fd(strerror(errno), 2);
+		ft_putstr_fd("\n", 2);
 		return (fd);
 	}
 	if (save && *save == -1)

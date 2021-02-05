@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 11:42:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/03 15:34:23 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 14:25:43 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,16 @@ void	wordexp_join_arg(t_wordexp *w, char *s)
 {
 	char	*new_arg;
 
-	new_arg = ft_strjoin(w->wordv[w->wordc - 1], s);
-	free(w->wordv[w->wordc - 1]);
-	w->wordv[w->wordc - 1] = new_arg;
-	w->offset = ft_strlen(new_arg) ? ft_strlen(new_arg) : 1;
-	free(s);
+	if (w->wordc == 0)
+		wordexp_append_arg(w, s);
+	else
+	{
+		new_arg = ft_strjoin(w->wordv[w->wordc - 1], s);
+		free(w->wordv[w->wordc - 1]);
+		w->wordv[w->wordc - 1] = new_arg;
+		w->offset = ft_strlen(new_arg) ? ft_strlen(new_arg) : 1;
+		free(s);
+	}
 }
 
 int		wordexp_append_arg(t_wordexp *w, char *word)
@@ -47,7 +52,10 @@ int		wordexp_append_arg(t_wordexp *w, char *word)
 	w->wordv[w->wordc] = word;
 	w->wordv[w->wordc + 1] = NULL;
 	++w->wordc;
-	w->offset = ft_strlen(word) ? ft_strlen(word) : 1;
+	if (word && ft_strlen(word))
+		w->offset = ft_strlen(word);
+	else
+		w->offset = 1;
 	return (0);
 }
 

@@ -175,7 +175,7 @@ char	**process_words(char *argv[])
 	return (w.wordv);
 }
 
-int			is_builtin(char *word)
+int			is_builtin(char *word, int expand)
 {
 	int			ret;
 	char		**exp;
@@ -191,7 +191,7 @@ int			is_builtin(char *word)
 		return (ret);
 	i = -1;
 	while (builtins[++i])
-		if (ft_strcmp(builtins[i], *exp) == 0)
+		if (ft_strcmp(builtins[i], expand ? *exp : word) == 0)
 		{
 			ret = 1;
 			break ;
@@ -278,7 +278,7 @@ pid_t		start_command(char *argv[], int ispipe, int haspipe, int lastpipe[2])
 		if (argv == NULL)
 			exit(0);
 
-		if (is_builtin(argv[0]))
+		if (is_builtin(argv[0], 0))
 			exit(exec_builtin(argv));
 
 		if ((pathname = is_cmd_exist(argv[0])) == NULL)
@@ -360,7 +360,7 @@ void	run_list(t_command *c)
 
 	while (c)
 	{
-		if (is_builtin(c->argv[0]) && c->op != OP_PIPE)
+		if (is_builtin(c->argv[0], 0) && c->op != OP_PIPE)
 		{
 			if ((g_exit_status = exec_builtin_parent(c)) < 0)
 				die("exec builtin failed.");
@@ -397,6 +397,7 @@ int			run_one_command(char *commandline)
 	t_command	*c;
 
 	c = command_new();
+	set_signal_handler(handler);
 	if (parse(commandline, c) < 0)
 	{
 		ft_putstr_fd("minishell: syntax error\n", 2);
@@ -412,6 +413,7 @@ int			run_one_command(char *commandline)
 void		shell_initialize(void)
 {
 	g_exit_status = 0;
+	g_interrupt = 0;
 	g_env = env_init();
 	if (!(g_path = ft_split(env_get(g_env, "PATH")->value, ':')))
 		die(strerror(errno));
@@ -425,7 +427,6 @@ int			main(int argc, char *argv[])
 	int			needprompt;
 
 	shell_initialize();
-	set_signal_handler(handler);
 	if (argc == 3 && ft_strcmp(argv[1], "-c") == 0)
 		return (run_one_command(argv[2]));
 	if (argc != 1)

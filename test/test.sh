@@ -130,10 +130,19 @@ exec_test "export TEST=echo ; \"\"''\$T'ES'T 1"
 exec_test "\$A"
 exec_test "\$OLDPWD"
 
-# exec_test "export ECHO=echo'\"' ; \$ECHO 1"
-# exec_test "export ECHO=echo\"'\" ; \$ECHO 1"
-# exec_test "export 'ECHO=echo\"\"' ; \$ECHO 1"
-# exec_test "export \"ECHO=echo''\" ; \$ECHO 1"
+exec_test "export ECHO=echo'\"' ; \$ECHO 1"
+exec_test "export ECHO=echo\"'\" ; \$ECHO 1"
+exec_test "export 'ECHO=echo\"\"' ; \$ECHO 1"
+exec_test "export \"ECHO=echo''\" ; \$ECHO 1"
+
+exec_test "export PATH=' ';echo \$PATH"
+exec_test "export A=\"           \" ;echo \$A"
+
+exec_test "export A='' B=\" \" C=\"    \" D=\"  d \" ; echo \$A \$B \$C \$D | cat -e ; echo \$A\$B''\"\$C\"\$D | cat -e"
+
+exec_test "export A='a' B=' ' C=' c ' ; echo \$A\$B\$A | cat -e ; echo \$A\$A\$A \$A \$A | cat -e ; echo \$C\$B \$B\$C | cat -e ; echo \$A\$C \$A\$B\$C"
+
+exec_test "export A='a' B=' ' ; echo \$A\$B\$A ; echo \$A \$B \$A; echo \$A\$B\$B\$B\$A"
 
 ### 未対応
 # exec_test "export A=aaa ; export A+=bbb ; echo \$A"
@@ -162,9 +171,7 @@ exec_test "\$OLDPWD"
 # exec_test 'cat < |'
 # exec_test 'cat < ;'
 # exec_test 'echo hello > '
-# exec_test 'echo hello >'
 # exec_test 'echo hello >>'
-# exec_test 'cat <'
 # exec_test 'cat < '
 # exec_test_with_files 'echo hello > > test1.txt'
 # exec_test_with_files 'echo hello >> >> test1.txt'
