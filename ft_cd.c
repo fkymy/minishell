@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:26:18 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/05 20:56:26 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/06 00:43:44 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,6 @@ static int	home_value_is_null(t_env *home)
 			puterr_cd(home->value);
 		return (1);
 	}
-	free(g_pwd);
-	g_pwd = ft_strdup(cwd);
 	free(cwd);
 	env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
 	env_set(&g_env, env_make_new("PWD", g_pwd));
@@ -88,9 +86,9 @@ static int	argv1_is_null_char(void)
 
 	if ((cwd = getcwd(NULL, 0)) == NULL)
 		return (puterr_cd(""));
+	free(cwd);
 	env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
 	env_set(&g_env, env_make_new("PWD", g_pwd));
-	free(cwd);
 	return (0);
 }
 
@@ -106,18 +104,14 @@ int			ft_cd(char *argv[])
 		return (puterr_cd(argv[1]));
 	if ((cwd = get_cwd(argv)) == NULL)
 		return (1);
-	if (is_path_slasla(argv[1]) == 1
-			|| (is_path_sla(argv[1]) == 0 && ft_strncmp(g_pwd, "//", 2) == 0))
+	free(cwd);
+	if (ft_strncmp(argv[1], "/", 1) == 0)
 	{
 		free(g_pwd);
-		g_pwd = ft_strjoin("/", cwd);
+		g_pwd = format_pwd(ft_strdup(argv[1]), ft_strdup(""));
 	}
 	else
-	{
-		free(g_pwd);
-		g_pwd = ft_strdup(cwd);
-	}
-	free(cwd);
+		g_pwd = format_pwd(g_pwd, ft_strdup(argv[1]));
 	env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
 	env_set(&g_env, env_make_new("PWD", g_pwd));
 	return (0);

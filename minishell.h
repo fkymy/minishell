@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 20:51:41 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/05 23:22:58 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ int						is_path_slasla(char *path);
 int						is_path_sla(char *path);
 int						ft_pwd(void);
 char					*get_pwd(void);
+char					*format_pwd(char *pwd, char *argv);
 int						ft_exit(char *argv[]);
 int						ft_export(char *argv[]);
 int						ft_unset(char *argv[]);
