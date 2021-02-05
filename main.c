@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 17:48:36 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 20:24:41 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 int			g_exit_status;
 char		**g_path;
 t_env		*g_env;
+char		*g_pwd;
 
 void		die(char *msg)
 {
@@ -81,6 +82,7 @@ int			main(int argc, char *argv[])
 	int		ret;
 	int		needprompt;
 
+	(void)argv;
 	shell_initialize();
 	if (argc != 1)
 		return (42);

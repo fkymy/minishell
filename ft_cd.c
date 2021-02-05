@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:26:18 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/04 12:39:37 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/05 20:56:26 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,86 +15,110 @@
 #include "minishell.h"
 #include "libft/libft.h"
 
-static char	*get_cwd(void)
+static char	*get_cwd(char *argv[])
+{
+	char	*cwd;
+	char	*tmp;
+
+	if ((cwd = getcwd(NULL, 0)) == NULL)
+	{
+		if (argv[1] == NULL)
+			puterr_cd_getcwd();
+		else
+		{
+			puterr_cd_getcwd_dot();
+			tmp = g_pwd;
+			if ((g_pwd = ft_strjoin_chr(g_pwd, argv[1], '/')) == NULL)
+				die(strerror(errno));
+			free(tmp);
+			env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
+			env_set(&g_env, env_make_new("PWD", g_pwd));
+		}
+	}
+	return (cwd);
+}
+
+static int	home_value_is_null(t_env *home)
 {
 	char	*cwd;
 
 	if ((cwd = getcwd(NULL, 0)) == NULL)
 	{
-		ft_putstr_fd("cd: error: getcwd: error: ", 2);
-		ft_putstr_fd(strerror(errno), 2);
-		ft_putstr_fd("\n", 2);
+		if (chdir(home->value) == 0)
+			puterr_cd_getcwd();
+		else
+			puterr_cd(home->value);
+		return (1);
 	}
-	return (cwd);
-}
-
-static void	putstr_cd(char *file)
-{
-	ft_putstr_fd("minishell: cd: ", 2);
-	ft_putstr_fd(file, 2);
-	ft_putstr_fd(": ", 2);
-	ft_putstr_fd(strerror(errno), 2);
-	ft_putstr_fd("\n", 2);
-}
-
-static int	home_is_null(char *cwd)
-{
-	ft_putstr_fd("minishell: cd: HOME not set\n", 2);
+	free(g_pwd);
+	g_pwd = ft_strdup(cwd);
 	free(cwd);
-	return (1);
+	env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
+	env_set(&g_env, env_make_new("PWD", g_pwd));
+	return (0);
 }
 
-static int	argv1_is_null(char *cwd)
+static int	argv1_is_null(void)
 {
-	t_env			*home;
+	t_env	*home;
 
 	home = env_get(g_env, "HOME");
 	if (home == NULL)
-		return (home_is_null(cwd));
-	else if (home->value == NULL || home->value[0] == '\0')
 	{
-		env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
-		env_set(&g_env, env_make_new("PWD", cwd));
-		free(cwd);
-		return (0);
+		ft_putstr_fd("minishell: cd: HOME not set\n", 2);
+		return (1);
 	}
-	else if (chdir(home->value) < 0)
+	if (home->value == NULL || home->value[0] == '\0')
+		return (home_value_is_null(home));
+	if (chdir(home->value) < 0)
 	{
-		putstr_cd(home->value);
-		free(cwd);
+		puterr_cd(home->value);
 		return (1);
 	}
 	env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
 	env_set(&g_env, env_make_new("PWD", home->value));
+	free(g_pwd);
+	g_pwd = ft_strdup(home->value);
+	return (0);
+}
+
+static int	argv1_is_null_char(void)
+{
+	char	*cwd;
+
+	if ((cwd = getcwd(NULL, 0)) == NULL)
+		return (puterr_cd(""));
+	env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
+	env_set(&g_env, env_make_new("PWD", g_pwd));
 	free(cwd);
 	return (0);
 }
 
 int			ft_cd(char *argv[])
 {
-	char			*cwd;
+	char	*cwd;
 
-	cwd = get_cwd();
 	if (argv[1] == NULL)
-		return (argv1_is_null(cwd));
-	else if (ft_strcmp(argv[1], "") == 0)
-	{
-		env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
-		env_set(&g_env, env_make_new("PWD", cwd));
-		free(cwd);
-		return (0);
-	}
-	else if (chdir(argv[1]) < 0)
-	{
-		putstr_cd(argv[1]);
-		free(cwd);
+		return (argv1_is_null());
+	if (ft_strcmp(argv[1], "") == 0)
+		return (argv1_is_null_char());
+	if (chdir(argv[1]) < 0)
+		return (puterr_cd(argv[1]));
+	if ((cwd = get_cwd(argv)) == NULL)
 		return (1);
+	if (is_path_slasla(argv[1]) == 1
+			|| (is_path_sla(argv[1]) == 0 && ft_strncmp(g_pwd, "//", 2) == 0))
+	{
+		free(g_pwd);
+		g_pwd = ft_strjoin("/", cwd);
 	}
+	else
+	{
+		free(g_pwd);
+		g_pwd = ft_strdup(cwd);
+	}
+	free(cwd);
 	env_set(&g_env, env_make_new("OLDPWD", get_pwd()));
-	free(cwd);
-	if ((cwd = get_cwd()) == NULL)
-		cwd = ft_strjoin_chr(get_pwd(), argv[1], '/');
-	env_set(&g_env, env_make_new("PWD", cwd));
-	free(cwd);
+	env_set(&g_env, env_make_new("PWD", g_pwd));
 	return (0);
 }
