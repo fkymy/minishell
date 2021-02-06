@@ -6,12 +6,9 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/05 16:48:48 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 16:54:16 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 19:46:28 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-#include <errno.h>
-#include <sys/stat.h>
 
 #include "libft/libft.h"
 #include "minishell.h"
@@ -55,6 +52,7 @@ char	*check_path(char *cmd, char *path2cmd)
 		}
 		return (path2cmd);
 	}
+	ft_free_null(&path2cmd);
 	return (NULL);
 }
 
@@ -70,7 +68,6 @@ char	*find_from_env(char *cmd, char **paths)
 			die(strerror(errno));
 		if (check_path(cmd, path2cmd))
 			return (path2cmd);
-		ft_free_null(&path2cmd);
 		i++;
 	}
 	return (NULL);
@@ -93,6 +90,7 @@ char	*build_path(char *cmd)
 			die("failed to split path");
 	if (ft_strchr(cmd, '/') || ft_strslen(paths) == 0)
 	{
+		ft_split_free_null(paths);
 		path2cmd = build_absolute_path(cmd);
 		return (check_path(cmd, path2cmd));
 	}

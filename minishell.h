@@ -6,12 +6,22 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 18:12:58 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 21:26:06 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+
+# include <stdio.h>
+# include <stdlib.h>
+# include <unistd.h>
+# include <sys/wait.h>
+# include <assert.h>
+# include <ctype.h>
+# include <fcntl.h>
+# include <errno.h>
+# include <sys/stat.h>
 
 typedef struct			s_command
 {
@@ -46,7 +56,7 @@ typedef struct			s_env
 
 extern t_env			*g_env;
 extern int				g_exit_status;
-volatile sig_atomic_t	g_interrupt;
+volatile int			g_interrupt;
 
 int						ft_echo(char *argv[]);
 int						ft_cd(char *argv[]);
@@ -71,7 +81,7 @@ void					setup_pipe(int ispipe, int haspipe,
 									int newpipe[2], int lastpipe[2]);
 void					cleanup_pipe(int haspipe, int lastpipe[2]);
 t_command				*do_pipeline(t_command *c);
-void					wait_pipeine(pid_t pid, int *condition);
+void					wait_pipeine(pid_t pid);
 
 int						is_builtin(char *word, int expand);
 int						exec_builtin(char *argv[]);

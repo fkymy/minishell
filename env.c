@@ -20,7 +20,7 @@ void	env_print(char *str, int quote)
 {
 	char	*p;
 
-	p = strchr(str, '=');
+	p = ft_strchr(str, '=');
 	if (p)
 	{
 		write(1, str, p++ - str);

@@ -6,11 +6,10 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/05 17:40:00 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 18:09:11 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 21:25:58 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <errno.h>
 #include "libft/libft.h"
 #include "minishell.h"
 
@@ -105,7 +104,7 @@ void		run_list(t_command *c)
 			}
 			c = do_pipeline(c);
 			if (c->pid != -1)
-				wait_pipeine(c->pid, &condition);
+				wait_pipeine(c->pid);
 		}
 		c = c->next;
 	}

@@ -6,26 +6,14 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 17:48:36 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 18:39:23 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <assert.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <sys/stat.h>
 
 #include "libft/libft.h"
 #include "minishell.h"
 
 int			g_exit_status;
-char		**g_path;
 t_env		*g_env;
 
 void		die(char *msg)
@@ -81,6 +69,7 @@ int			main(int argc, char *argv[])
 	int		ret;
 	int		needprompt;
 
+	(void)argv;
 	shell_initialize();
 	if (argc != 1)
 		return (42);
