@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/02/05 14:25:22 by yufukuya         ###   ########.fr        #
+#    Updated: 2021/02/05 22:49:59 by yufukuya         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,6 +33,7 @@ mandatory := ft_memset.c \
 			 ft_strnstr.c \
 			 ft_strncmp.c \
 			 ft_atoi.c \
+			 ft_atol.c \
 			 ft_isalpha.c \
 			 ft_isdigit.c \
 			 ft_isalnum.c \

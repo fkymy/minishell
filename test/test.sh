@@ -109,7 +109,6 @@ function exec_test()
 ### Mandatory Part
 echo > results.txt ;
 
-
 ### HOT FIX
 exec_test 'cat /dev/random | head -c 100 | wc -c'
 exec_test "export a=\"aaa\"; echo \"\$a\", '\$a', \$a"
@@ -146,11 +145,30 @@ exec_test 'exit +1'
 exec_test 'exit +0'
 exec_test "exit ' 3'"
 exec_test "exit '\t\f\r 3'"
+exec_test "exit 4294967296"
+exec_test "exit -4294967297"
+exec_test "exit 4294967295"
+exec_test "exit -4294967295"
 exec_test "exit Mollitia asperiores"
 exec_test "exit 123 456 asperiores"
 exec_test "exit 18446744073709551615"
-# exec_test "exit -9223372036854775809"
+exec_test "exit -922337285"
+exec_test "exit +922337285"
+exec_test "exit -922337203685"
+exec_test "exit +922337203685"
+exec_test "exit -9223372036854775"
+exec_test "exit +9223372036854775"
+exec_test "exit -9223372036854775807"
+exec_test "exit -9223372036854775808"
+exec_test "exit -9223372036854775809"
+exec_test "exit +9223372036854775807"
+exec_test "exit +9223372036854775806"
 exec_test "exit 9223372036854775808"
+exec_test "exit 92233720368547758099999999"
+exec_test "exit -92233720368547758099999999"
+exec_test "exit +00092233720368547758099999999"
+exec_test "exit -0000092233720368547758099999999"
+
 
 exec_test "mkdir ccc ; echo '#!/bin/sh' 'echo hello' > ccc/ddd ; chmod +x ccc/ddd ; ccc/ddd ; rm -rf ccc"
 
