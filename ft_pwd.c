@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:26:51 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/06 02:05:51 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/06 15:26:14 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ char	*split_join_cnt(char **split, int *cnt)
 	char	*ret;
 	int		i;
 	int		j;
-	char	*tmp;
 
 	i = -1;
 	while (split[++i])
@@ -58,9 +57,7 @@ char	*split_join_cnt(char **split, int *cnt)
 	ret = ft_strdup("");
 	while (i < j)
 	{
-		tmp = ft_strdup(split[i]);
-		ret = ft_strjoin_chr(ret, tmp, '/');
-		free(tmp);
+		ret = ft_strjoin_chr_free(ret, ft_strdup(split[i]), '/');
 		i++;
 	}
 	ft_split_free_null(split);
@@ -85,12 +82,12 @@ char	*format_pwd(char *pwd, char *argv)
 	if (slasla == 1)
 	{
 		if (path[0] == '\0')
-			path = ft_strdup("//");
+			path = ft_strjoin_chr_free(ft_strdup("//"), path, '\0');
 		else
-			path = ft_strjoin("/", path);
+			path = ft_strjoin_free(ft_strdup("/"), path);
 	}
 	if (path[0] == '\0' && slasla == 0)
-		path = ft_strdup("/");
+		path = ft_strjoin_chr_free(ft_strdup("/"), path, '\0');
 	return (path);
 }
 

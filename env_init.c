@@ -6,11 +6,10 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/05 17:55:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 20:32:00 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/06 14:46:18 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <errno.h>
 #include "libft/libft.h"
 #include "minishell.h"
 
@@ -34,7 +33,7 @@ void		env_update_shlvl(t_env *e)
 	}
 }
 
-void		init_necessary_env(t_env *head)
+void		init_necessary_env(t_env **head)
 {
 	char	*cwd;
 	char	*shell;
@@ -43,18 +42,18 @@ void		init_necessary_env(t_env *head)
 		die(strerror(errno));
 	if (!(shell = ft_strjoin_chr(cwd, "minishell", '/')))
 		die(strerror(errno));
-	if (env_get(head, "PATH") == NULL)
-		env_set(&head, env_make_new("PATH",
+	if (env_get(*head, "PATH") == NULL)
+		env_set(head, env_make_new("PATH",
 					"/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin:."));
-	env_set(&head, env_make_new("OLDPWD", NULL));
-	if (env_get(head, "PWD") == NULL)
-		env_set(&head, env_make_new("PWD", cwd));
+	env_set(head, env_make_new("OLDPWD", NULL));
+	if (env_get(*head, "PWD") == NULL)
+		env_set(head, env_make_new("PWD", cwd));
 	g_pwd = ft_strdup(cwd);
-	if (env_get(head, "SHLVL") == NULL)
-		env_set(&head, env_make_new("SHLVL", "0"));
-	env_update_shlvl(head);
-	if (env_get(head, "_") == NULL)
-		env_set(&head, env_make_new("_", shell));
+	if (env_get(*head, "SHLVL") == NULL)
+		env_set(head, env_make_new("SHLVL", "0"));
+	env_update_shlvl(*head);
+	if (env_get(*head, "_") == NULL)
+		env_set(head, env_make_new("_", shell));
 	free(cwd);
 	free(shell);
 }
@@ -64,16 +63,19 @@ t_env		*env_init(void)
 	extern char	**environ;
 	t_env		*head;
 	size_t		i;
+	char		*name;
 
 	i = 0;
 	head = NULL;
 	while (environ[i])
 	{
-		if (ft_strcmp(env_split_name(environ[i]), "OLDPWD") == 0)
+		name = env_split_name(environ[i]);
+		if (ft_strcmp(name, "OLDPWD") == 0)
 			i++;
 		else
 			env_set(&head, env_new(environ[i++]));
+		free(name);
 	}
-	init_necessary_env(head);
+	init_necessary_env(&head);
 	return (head);
 }

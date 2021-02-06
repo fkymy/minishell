@@ -6,26 +6,14 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 20:24:41 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/06 14:45:11 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <assert.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <sys/stat.h>
 
 #include "libft/libft.h"
 #include "minishell.h"
 
 int			g_exit_status;
-char		**g_path;
 t_env		*g_env;
 char		*g_pwd;
 

@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:53:11 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 17:47:50 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 19:20:50 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ char		*get_next_token(char *str, int *type, char **token)
 	}
 	str = buildtoken(&v, str, type);
 	if (v.error)
-		die("failed to tokenize");
+		die("you cannot do mutiline commands.");
 	*token = vector_gets(&v);
 	return (str);
 }

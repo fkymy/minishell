@@ -10,11 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
-
 #include "libft/libft.h"
 #include "minishell.h"
 
@@ -22,9 +17,7 @@ static char	*expand_filename(char *arg)
 {
 	char	*filename;
 	char	**word;
-	int		err;
 
-	err = 0;
 	word = wordexp_wrap(arg);
 	if (!word || ft_strslen(word) != 1 || ft_strlen(*word) == 0)
 	{

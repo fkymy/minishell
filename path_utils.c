@@ -10,9 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <errno.h>
-#include <sys/stat.h>
-
 #include "libft/libft.h"
 #include "minishell.h"
 

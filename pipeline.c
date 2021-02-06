@@ -6,11 +6,9 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/05 17:36:33 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 17:52:05 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 21:26:16 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-#include <errno.h>
 
 #include "libft/libft.h"
 #include "minishell.h"
@@ -67,13 +65,14 @@ t_command	*do_pipeline(t_command *c)
 	return (c);
 }
 
-void		wait_pipeine(pid_t pid, int *condition)
+void		wait_pipeine(pid_t pid)
 {
 	pid_t	exited_pid;
 	int		status;
 
-	(void)condition;
 	exited_pid = waitpid(pid, &status, 0);
+	if (exited_pid != pid)
+		die("failed to wait");
 	if (WIFEXITED(status))
 	{
 		g_exit_status = WEXITSTATUS(status);

@@ -1,4 +1,4 @@
-# Makefile for minishell, updated Sat Feb  6 13:21:42 JST 2021
+# Makefile for minishell, updated Sat Feb  6 15:28:53 JST 2021
 
 SRC := builtin.c command.c commandline.c env.c env_init.c env_make.c env_utils.c execute.c ft_cd.c ft_cd_utils.c ft_cd_utils2.c ft_echo.c ft_env.c ft_exit.c ft_export.c ft_pwd.c ft_unset.c main.c parse.c path.c path_utils.c pipeline.c redir.c shell_utils.c signal.c token.c vector.c wordexp.c wordexp_quote.c wordexp_var.c
 
@@ -12,7 +12,6 @@ NAME := minishell
 
 CC := gcc
 CFLAGS := -Wall -Wextra -Werror
-CFLAGS += -g -fsanitize=address
 
 BINDIR := /usr/local/bin
 

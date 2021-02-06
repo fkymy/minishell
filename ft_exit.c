@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/01 15:31:40 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 15:06:11 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 22:54:56 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,16 @@ int			ft_isdigits(char *s)
 	return (1);
 }
 
+int			get_status(char *str)
+{
+	long	status;
+
+	status = ft_atol(str);
+	if (status == -1 && ft_strcmp(str, "-1") != 0)
+		status = 255;
+	return ((int)status);
+}
+
 int			ft_exit(char *argv[])
 {
 	ft_putstr_fd("exit\n", 2);
@@ -38,14 +48,13 @@ int			ft_exit(char *argv[])
 	}
 	if (argv[1])
 	{
-		if (ft_isdigits(argv[1]))
-			g_exit_status = ft_atoi(argv[1]);
+		if (ft_isdigits(argv[1]) && ft_strlen(argv[1]) <= 20)
+			g_exit_status = get_status(argv[1]);
 		else
-		{
-			ft_putstr_fd("minishell: exit: numeric argument required\n", 2);
 			g_exit_status = 255;
-		}
 	}
+	if (g_exit_status == 255)
+		ft_putstr_fd("minishell: exit: numeric argument required\n", 2);
 	exit(g_exit_status);
 	return (0);
 }
