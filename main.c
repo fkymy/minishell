@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/01 18:44:13 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 18:39:23 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/06 14:45:11 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 int			g_exit_status;
 t_env		*g_env;
+char		*g_pwd;
 
 void		die(char *msg)
 {

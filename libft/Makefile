@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/02/05 22:49:59 by yufukuya         ###   ########.fr        #
+#    Updated: 2021/02/06 15:27:09 by yufukuya         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -50,6 +50,7 @@ mandatory := ft_memset.c \
 mandatory += ft_substr.c \
 			 ft_strjoin.c \
 			 ft_strjoin_chr.c \
+			 ft_strjoin_chr_free.c \
 			 ft_strtrim.c \
 			 ft_split.c \
 			 ft_itoa.c \
