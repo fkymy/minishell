@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/05 17:55:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 18:08:17 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/05 20:32:00 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ void		init_necessary_env(t_env *head)
 	env_set(&head, env_make_new("OLDPWD", NULL));
 	if (env_get(head, "PWD") == NULL)
 		env_set(&head, env_make_new("PWD", cwd));
+	g_pwd = ft_strdup(cwd);
 	if (env_get(head, "SHLVL") == NULL)
 		env_set(&head, env_make_new("SHLVL", "0"));
 	env_update_shlvl(head);

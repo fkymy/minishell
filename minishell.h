@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 18:12:58 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/06 13:20:47 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,19 @@ typedef struct			s_env
 extern t_env			*g_env;
 extern int				g_exit_status;
 volatile sig_atomic_t	g_interrupt;
+extern char				*g_pwd;
 
 int						ft_echo(char *argv[]);
 int						ft_cd(char *argv[]);
+void					puterr_cd_getcwd(void);
+int						puterr_cd(char *file);
+void					puterr_cd_getcwd_dot(void);
+char					*set_path(char *argv);
+int						is_path_slasla(char *path);
+int						is_path_sla(char *path);
 int						ft_pwd(void);
 char					*get_pwd(void);
+char					*format_pwd(char *pwd, char *argv);
 int						ft_exit(char *argv[]);
 int						ft_export(char *argv[]);
 int						ft_unset(char *argv[]);

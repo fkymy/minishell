@@ -1,8 +1,8 @@
-# Makefile for minishell, updated Fri Feb  5 17:41:24 JST 2021
+# Makefile for minishell, updated Sat Feb  6 13:21:42 JST 2021
 
-SRC := builtin.c command.c commandline.c env.c execute.c ft_cd.c ft_echo.c ft_exit.c ft_export.c ft_pwd.c ft_unset.c main.c parse.c path.c path_utils.c pipeline.c redir.c shell_utils.c signal.c token.c vector.c wordexp.c wordexp_quote.c wordexp_var.c
+SRC := builtin.c command.c commandline.c env.c env_init.c env_make.c env_utils.c execute.c ft_cd.c ft_cd_utils.c ft_cd_utils2.c ft_echo.c ft_env.c ft_exit.c ft_export.c ft_pwd.c ft_unset.c main.c parse.c path.c path_utils.c pipeline.c redir.c shell_utils.c signal.c token.c vector.c wordexp.c wordexp_quote.c wordexp_var.c
 
-OBJ := builtin.o command.o commandline.o env.o execute.o ft_cd.o ft_echo.o ft_exit.o ft_export.o ft_pwd.o ft_unset.o main.o parse.o path.o path_utils.o pipeline.o redir.o shell_utils.o signal.o token.o vector.o wordexp.o wordexp_quote.o wordexp_var.o
+OBJ := builtin.o command.o commandline.o env.o env_init.o env_make.o env_utils.o execute.o ft_cd.o ft_cd_utils.o ft_cd_utils2.o ft_echo.o ft_env.o ft_exit.o ft_export.o ft_pwd.o ft_unset.o main.o parse.o path.o path_utils.o pipeline.o redir.o shell_utils.o signal.o token.o vector.o wordexp.o wordexp_quote.o wordexp_var.o
 
 HDR := minishell.h
 
