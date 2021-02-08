@@ -6,7 +6,7 @@
 #    By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/27 20:32:45 by yufukuya          #+#    #+#              #
-#    Updated: 2021/02/06 15:27:09 by yufukuya         ###   ########.fr        #
+#    Updated: 2021/02/08 17:24:41 by tayamamo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -75,6 +75,7 @@ bonus := ft_lstnew.c \
 		 ft_free_null.c \
 		 ft_strjoin_free.c \
 		 ft_split_free_null.c \
+		 ft_split_join_chr.c \
 		 ft_teardown.c
 
 objects := $(mandatory:.c=.o)

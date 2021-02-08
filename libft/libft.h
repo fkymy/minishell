@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/27 20:21:32 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/06 15:27:30 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/08 17:24:10 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,7 @@ int				get_next_line(int fd, char **line);
 void			ft_free_null(char **ptr);
 char			*ft_strjoin_free(char *s1, char *s2);
 void			ft_split_free_null(char **ptr);
+char			*ft_split_join_chr(char **split, char chr);
 char			**ft_teardown(char **res, int allocations);
 
 #endif
