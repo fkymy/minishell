@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:26:51 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/06 15:26:14 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/08 18:08:00 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,52 +15,59 @@
 #include "minishell.h"
 #include "libft/libft.h"
 
-char	**split_skip_str(char **split, char *str, int *cnt)
+char	*is_str_path(char **split, int *total)
 {
-	char	**ret;
+	char	*ok;
 	int		i;
-	int		j;
-
-	i = -1;
-	*cnt = 0;
-	while (split[++i])
-	{
-		if (ft_strcmp(split[i], str) == 0)
-			(*cnt)++;
-	}
-	if ((ret = malloc(sizeof(char *) * (i - (*cnt) + 1))) == NULL)
-		die(strerror(errno));
-	i = -1;
-	j = 0;
-	while (split[++i])
-	{
-		if (ft_strcmp(split[i], str) != 0)
-			ret[j++] = ft_strdup(split[i]);
-	}
-	ret[j] = NULL;
-	ft_split_free_null(split);
-	free(str);
-	return (ret);
-}
-
-char	*split_join_cnt(char **split, int *cnt)
-{
-	char	*ret;
-	int		i;
-	int		j;
+	int		cnt;
 
 	i = -1;
 	while (split[++i])
 		;
-	j = i - *cnt;
-	i = 0;
-	ret = ft_strdup("");
-	while (i < j)
+	if ((ok = ft_calloc(1, sizeof(char) * i)) == NULL)
+		return (NULL);
+	*total = i;
+	cnt = 0;
+	while (--i >= 0)
 	{
-		ret = ft_strjoin_chr_free(ret, ft_strdup(split[i]), '/');
-		i++;
+		if (ft_strcmp(split[i], "..") == 0)
+			cnt++;
+		else
+		{
+			if (cnt == 0)
+				ok[i] = 1;
+			else
+				cnt--;
+		}
 	}
+	return (ok);
+}
+
+char	**split_format_dotdot(char **split)
+{
+	char	**ret;
+	int		i;
+	char	*ok;
+	int		cnt;
+	int		total;
+
+	if ((ok = is_str_path(split, &total)) == NULL)
+		die(strerror(errno));
+	i = -1;
+	cnt = 0;
+	while (++i < total)
+		if (ok[i])
+			cnt++;
+	if ((ret = malloc(sizeof(char *) * (cnt + 1))) == NULL)
+		return (NULL);
+	i = -1;
+	cnt = 0;
+	while (split[++i])
+		if (ok[i])
+			ret[cnt++] = ft_strdup(split[i]);
+	ret[cnt] = NULL;
 	ft_split_free_null(split);
+	free(ok);
 	return (ret);
 }
 
@@ -69,16 +76,15 @@ char	*format_pwd(char *pwd, char *argv)
 	char	*path;
 	char	**tmp;
 	int		slasla;
-	int		cnt;
 
 	slasla = is_path_slasla(pwd);
 	path = ft_strjoin_chr(pwd, argv, '/');
 	free(pwd);
 	free(argv);
-	tmp = split_skip_str(ft_split(path, '/'), ft_strdup("."), &cnt);
+	tmp = ft_split_skip_str(ft_split(path, '/'), ft_strdup("."));
 	free(path);
-	tmp = split_skip_str(tmp, ft_strdup(".."), &cnt);
-	path = split_join_cnt(tmp, &cnt);
+	tmp = split_format_dotdot(tmp);
+	path = ft_split_join_chr(tmp, '/');
 	if (slasla == 1)
 	{
 		if (path[0] == '\0')
