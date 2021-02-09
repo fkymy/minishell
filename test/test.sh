@@ -282,6 +282,9 @@ exec_test '""e""c""h""o"""""" 1 | cat -e'
 # exec_test 'echo "1 2 3" ; echo $_ ; echo $_'
 
 # cd
+exec_test 'mkdir a b ; cd a ; cd ../b ; pwd ; cd .. ; pwd ; echo $PWD ; echo $OLDPWD ; rm -fr a b'
+exec_test 'mkdir -p a/aa b ; cd a/aa ; cd ../../b/bb ; pwd ; echo $PWD ; echo $OLDPWD ; cd .. ; rm -fr a b'
+exec_test 'mkdir a ; ln -s a aa ; cd aa ; rm ../aa ; cd . ; pwd ; echo $PWD ; echo $OLDPWD ; rm -fr a'
 exec_test 'mkdir a ; cd a ; rm -fr ../a ; cd ; pwd'
 exec_test 'mkdir a ; cd a ; rm -fr ../a ; cd "" ; pwd'
 exec_test 'mkdir a ; cd a ; rm -fr ../a ; cd . ; pwd'
