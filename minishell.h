@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/19 18:27:39 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/06 14:46:45 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/09 00:01:28 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ int						ft_cd(char *argv[]);
 void					puterr_cd_getcwd(void);
 int						puterr_cd(char *file);
 void					puterr_cd_getcwd_dot(void);
-char					*set_path(char *argv);
+void					check_symbolic_link(char *argv);
 int						is_path_slasla(char *path);
 int						is_path_sla(char *path);
 int						ft_pwd(void);

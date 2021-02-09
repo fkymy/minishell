@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:26:18 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/06 13:45:44 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/09 00:00:46 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,10 +105,7 @@ int			ft_cd(char *argv[])
 	if ((cwd = get_cwd(argv)) == NULL)
 		return (1);
 	free(cwd);
-	cwd = set_path(argv[1]);
-	if (chdir(cwd) < 0)
-		return (puterr_cd(argv[1]));
-	free(cwd);
+	check_symbolic_link(argv[1]);
 	if (ft_strncmp(argv[1], "/", 1) == 0)
 	{
 		free(g_pwd);
