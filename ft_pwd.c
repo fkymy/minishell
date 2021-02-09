@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/02 17:26:51 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/02/08 18:08:00 by tayamamo         ###   ########.fr       */
+/*   Updated: 2021/02/09 19:24:03 by tayamamo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ char	*is_str_path(char **split, int *total)
 	i = -1;
 	while (split[++i])
 		;
-	if ((ok = ft_calloc(1, sizeof(char) * i)) == NULL)
+	if ((ok = ft_calloc(i, sizeof(char))) == NULL)
 		return (NULL);
 	*total = i;
 	cnt = 0;
