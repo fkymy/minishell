@@ -67,7 +67,7 @@ function exec_test_with_files()
 		printf $WHITE"Expected exit status : $WHITE$ES_2$RESET\n"
 	fi
 	echo
-	sleep 0.1
+	sleep 0.03
 }
 
 function exec_test()
@@ -103,7 +103,7 @@ function exec_test()
 		printf $WHITE"Expected exit status : $WHITE$ES_2$RESET\n"
 	fi
 	echo
-	sleep 0.1
+	sleep 0.03
 }
 
 ### Mandatory Part
@@ -763,6 +763,18 @@ exec_test "export CAT='cat -e | wc' ; echo \$CAT"
 exec_test "export CAT='cat -e | wc' ; \$CAT"
 exec_test "echo what > what.txt ; export CAT='cat what.txt' ; \$CAT ; rm what.txt"
 exec_test "export ECHO='echo hello > what.txt ; cat what.txt' ; \$ECHO"
+
+
+### andor
+exec_test "echo a || echo b && echo c || echo d || echo e || echo f && echo g"
+exec_test "echo && adsf && asdf && echo a || echo b || asdf || asdf || echo c"
+exec_test "true && echo a ; false && echo c"
+exec_test "true || echo a ; true && echo c"
+exec_test "echo a || true || true || true || true && bbbb && echo c; echo d"
+exec_test "ls asdf/asdf && echo a || echo b || echo c && cd asdfasd || pwd && echo d && echo e"
+exec_test "echo a | cat | wc && echo b | cat | grep || export A && export B && echo \$B"
+exec_test "cd . && pwd ; cd .. && pwd && cd . && pwd || echo a || cd .. && pwd ; cd . && pwd"
+exec_test "export A=aaa && echo \$A && export B='' && unset B && echo \$B"
 
 
 ### Optional
