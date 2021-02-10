@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/11 21:53:11 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 19:20:50 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/10 17:26:55 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ char		*buildtoken(t_vector *v, char *str, int *type)
 			quoted = *str;
 		else if (*str == quoted)
 			quoted = 0;
-		else if (*str == '\\' && quoted != '\''
+		else if (*str == '\\' && quoted == '\"'
 				&& (str[1] == '\"' || str[1] == '\\'))
 			vector_append(v, *str++);
 		vector_append(v, *str++);

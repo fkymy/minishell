@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/01 15:31:40 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 22:54:56 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/09 19:35:29 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,11 @@
 
 int			ft_isdigits(char *s)
 {
+	while (ft_isspace(*s))
+		s++;
 	if (*s == '-' || *s == '+')
+		s++;
+	while (ft_isspace(*s))
 		s++;
 	if (*s == '\0')
 		return (0);
@@ -48,7 +52,7 @@ int			ft_exit(char *argv[])
 	}
 	if (argv[1])
 	{
-		if (ft_isdigits(argv[1]) && ft_strlen(argv[1]) <= 20)
+		if (ft_isdigits(argv[1]))
 			g_exit_status = get_status(argv[1]);
 		else
 			g_exit_status = 255;

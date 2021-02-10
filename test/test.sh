@@ -67,7 +67,7 @@ function exec_test_with_files()
 		printf $WHITE"Expected exit status : $WHITE$ES_2$RESET\n"
 	fi
 	echo
-	sleep 0.1
+	sleep 0.03
 }
 
 function exec_test()
@@ -103,7 +103,7 @@ function exec_test()
 		printf $WHITE"Expected exit status : $WHITE$ES_2$RESET\n"
 	fi
 	echo
-	sleep 0.1
+	sleep 0.03
 }
 
 ### Mandatory Part
@@ -140,40 +140,8 @@ exec_test "export A='' B=\" \" C=\"    \" D=\"  d \" ; echo \$A \$B \$C \$D | ca
 exec_test "export A='a' B=' ' C=' c ' ; echo \$A\$B\$A | cat -e ; echo \$A\$A\$A \$A \$A | cat -e ; echo \$C\$B \$B\$C | cat -e ; echo \$A\$C \$A\$B\$C"
 exec_test "export A='a' B=' ' ; echo \$A\$B\$A ; echo \$A \$B \$A; echo \$A\$B\$B\$B\$A"
 
-exec_test "exit -"
-exec_test 'exit +1'
-exec_test 'exit +0'
-exec_test "exit ' 3'"
-exec_test "exit '\t\f\r 3'"
-exec_test "exit 4294967296"
-exec_test "exit -4294967297"
-exec_test "exit 4294967295"
-exec_test "exit -4294967295"
-exec_test "exit Mollitia asperiores"
-exec_test "exit 123 456 asperiores"
-exec_test "exit 18446744073709551615"
-exec_test "exit -922337285"
-exec_test "exit +922337285"
-exec_test "exit -922337203685"
-exec_test "exit +922337203685"
-exec_test "exit -9223372036854775"
-exec_test "exit +9223372036854775"
-exec_test "exit -9223372036854775807"
-exec_test "exit -9223372036854775808"
-exec_test "exit -9223372036854775809"
-exec_test "exit +9223372036854775807"
-exec_test "exit +9223372036854775806"
-exec_test "exit 9223372036854775808"
-exec_test "exit 92233720368547758099999999"
-exec_test "exit -92233720368547758099999999"
-exec_test "exit +00092233720368547758099999999"
-exec_test "exit -0000092233720368547758099999999"
-
-
 exec_test "mkdir ccc ; echo '#!/bin/sh' 'echo hello' > ccc/ddd ; chmod +x ccc/ddd ; ccc/ddd ; rm -rf ccc"
 
-
-### 未対応
 # exec_test "export A=aaa ; export A+=bbb ; echo \$A"
 
 ### Syntax error
@@ -533,10 +501,40 @@ exec_test 'env | sort | grep -v _='
 exec_test "export _ABC ; env | grep _ABC ; export _DEF= ; env | grep _DEF ; export _GHI='hello there' ; env | grep _GHI"
 
 # exit
+exec_test "exit -"
+exec_test "exit '    +1'"
+exec_test "exit '    -1'"
+exec_test "exit '    '"
+exec_test 'exit +1'
+exec_test 'exit +0'
 exec_test 'exit 0'
-exec_test 'exit -'
-exec_test 'exit -1'
 exec_test 'exit -0'
+exec_test 'exit -1'
+exec_test "exit ' 3'"
+exec_test "exit '\t\f\r 3'"
+exec_test "exit 4294967296"
+exec_test "exit -4294967297"
+exec_test "exit 4294967295"
+exec_test "exit -4294967295"
+exec_test "exit Mollitia asperiores"
+exec_test "exit 123 456 asperiores"
+exec_test "exit 18446744073709551615"
+exec_test "exit -922337285"
+exec_test "exit +922337285"
+exec_test "exit -922337203685"
+exec_test "exit +922337203685"
+exec_test "exit -9223372036854775"
+exec_test "exit +9223372036854775"
+exec_test "exit -9223372036854775807"
+exec_test "exit -9223372036854775808"
+exec_test "exit -9223372036854775809"
+exec_test "exit +9223372036854775807"
+exec_test "exit +9223372036854775806"
+exec_test "exit 9223372036854775808"
+exec_test "exit 92233720368547758099999999"
+exec_test "exit -92233720368547758099999999"
+exec_test "exit +00092233720368547758099999999"
+exec_test "exit -0000092233720368547758099999999"
 exec_test 'exit ----21'
 exec_test 'exit --++-+-21'
 exec_test 'exit 255'
@@ -765,6 +763,18 @@ exec_test "export CAT='cat -e | wc' ; echo \$CAT"
 exec_test "export CAT='cat -e | wc' ; \$CAT"
 exec_test "echo what > what.txt ; export CAT='cat what.txt' ; \$CAT ; rm what.txt"
 exec_test "export ECHO='echo hello > what.txt ; cat what.txt' ; \$ECHO"
+
+
+### andor
+exec_test "echo a || echo b && echo c || echo d || echo e || echo f && echo g"
+exec_test "echo && adsf && asdf && echo a || echo b || asdf || asdf || echo c"
+exec_test "true && echo a ; false && echo c"
+exec_test "true || echo a ; true && echo c"
+exec_test "echo a || true || true || true || true && bbbb && echo c; echo d"
+exec_test "ls asdf/asdf && echo a || echo b || echo c && cd asdfasd || pwd && echo d && echo e"
+exec_test "echo a | cat | wc && echo b | cat | grep || export A && export B && echo \$B"
+exec_test "cd . && pwd ; cd .. && pwd && cd . && pwd || echo a || cd .. && pwd ; cd . && pwd"
+exec_test "export A=aaa && echo \$A && export B='' && unset B && echo \$B"
 
 
 ### Optional
