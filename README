@@ -1,0 +1,41 @@
+			minishell: Re-implementation of a UNIX Shell
+
+minishell is a re-implementation of Bash-like UNIX shell. The purpose
+of this project is to learn about system calls for creating, managing,
+and coordinating processes. Features of minishell includes: parsing of
+command lines, execution of foreground commands, conditional comamnds,
+I/O redirections, pipes, and command interruption through signals.
+
+minishell command line has the following BNF grammer:
+
+<commandline> ::= <list>
+        |  <list> ";"
+        |  <list> "&"
+
+<list> ::= <andor>
+        |  <list> ";" <andor>
+        |  <list> "&" <andor>
+
+<andor> ::= <pipeline>
+        |  <andor> "&&" <pipeline>
+        |  <andor> "||" <pipeline>
+
+<pipeline> ::=  <command>
+        |  <pipeline> "|" <command>
+
+<command>  ::=  <word>
+        |  <redirection_list>
+        |  <command> <word>
+        |  <command> <redirection_list>
+
+<redirection_list> ::= <io_redirection>
+        |  <redirection_list> <io_redirection>
+
+<io_redirection> ::= <redirection_op> <filename>
+
+<redirection_op> ::= "<" | ">" | ">>"
+
+BUILTINS
+
+The following builtin commands are implemented: echo, cd, pwd, export,
+unset, env, exit.
