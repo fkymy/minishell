@@ -6,7 +6,7 @@
 /*   By: tayamamo <tayamamo@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/22 13:56:34 by tayamamo          #+#    #+#             */
-/*   Updated: 2021/01/29 18:25:18 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/10 14:00:55 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ void	handler(int signum)
 	ft_putstr_fd("\033[2D\033[0K", 2);
 	if (signum == SIGINT)
 	{
+		g_exit_status = 1;
 		g_interrupt = signum;
 		ft_putstr_fd("\nminishell>", 2);
 	}

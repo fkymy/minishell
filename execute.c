@@ -6,7 +6,7 @@
 /*   By: yufukuya <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/05 17:40:00 by yufukuya          #+#    #+#             */
-/*   Updated: 2021/02/05 21:25:58 by yufukuya         ###   ########.fr       */
+/*   Updated: 2021/02/10 14:04:39 by yufukuya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,9 +86,23 @@ pid_t		start_command(char *argv[],
 	return (pid);
 }
 
+void		set_condition(t_command *c, int *condition)
+{
+	if (!c)
+		*condition = 0;
+	else if (c->op == OP_AND && g_exit_status == 0)
+		*condition = 1;
+	else if (c->op == OP_OR && g_exit_status != 0)
+		*condition = 1;
+	else if (c->op == OP_AND || c->op == OP_OR)
+		*condition = 0;
+	else
+		*condition = 1;
+}
+
 void		run_list(t_command *c)
 {
-	int		condition;
+	int	condition;
 
 	condition = 1;
 	while (c)
@@ -99,6 +113,7 @@ void		run_list(t_command *c)
 			{
 				if ((g_exit_status = exec_builtin_parent(c)) < 0)
 					die("exec builtin failed.");
+				set_condition(c, &condition);
 				c = c->next;
 				continue ;
 			}
@@ -106,6 +121,7 @@ void		run_list(t_command *c)
 			if (c->pid != -1)
 				wait_pipeine(c->pid);
 		}
+		set_condition(c, &condition);
 		c = c->next;
 	}
 }
