@@ -1,4 +1,4 @@
-			minishell: Re-implementation of a UNIX Shell
+           minishell: Re-implementation of a UNIX Shell
 
 minishell is a re-implementation of Bash-like UNIX shell. The purpose
 of this project is to learn about system calls for creating, managing,
